@@ -95,7 +95,7 @@ export default function MatchRoom() {
       <div style={{ minHeight: '100vh', background: gradients.page }}>
         <Navbar />
         <div style={s.loadingCenter}>
-          <div style={s.loadingSpinner}>
+          <div style={s.loadingSpinner} className="anim-spin">
             <Activity size={28} color={colors.orange} />
           </div>
           <p style={s.loadingText}>Loading match data...</p>
@@ -163,16 +163,22 @@ export default function MatchRoom() {
 
       {/* Decision window alert bar */}
       {pendingDecisionType && decisionSecondsLeft > 0 && (
-        <div style={s.alertBar}>
+        <div style={s.alertBar} key={pendingDecisionType}>
           <div style={{ ...s.alertBarFill, width: `${timerPct * 100}%`, background: decisionSecondsLeft > 5 ? colors.orange : colors.red }} />
           <div style={s.alertContent}>
             <div style={s.alertLeft}>
-              <Lightning size={14} color={colors.orange} />
-              <span style={s.alertLabel}>
+              <Lightning size={14} color={decisionSecondsLeft <= 3 ? colors.red : colors.orange} />
+              <span style={{ ...s.alertLabel, color: decisionSecondsLeft <= 3 ? colors.red : colors.orange }}>
                 {pendingDecisionType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} — Make your call!
               </span>
             </div>
-            <span style={{ ...s.alertTimer, color: decisionSecondsLeft <= 3 ? colors.red : colors.orange }}>
+            <span style={{
+              ...s.alertTimer,
+              color: decisionSecondsLeft <= 3 ? colors.red : colors.orange,
+              animation: decisionSecondsLeft <= 3
+                ? 'shake 0.4s ease infinite, flipIn 0.2s ease both'
+                : 'flipIn 0.2s ease both',
+            }}>
               {decisionSecondsLeft}s
             </span>
           </div>
@@ -262,21 +268,29 @@ export default function MatchRoom() {
         {/* Center col */}
         <div style={s.centerCol}>
           {pendingDecisionType === 'field_placement' && (
-            <FieldDiagram onSubmit={(p: FieldPosition[]) => submitDecision('field_placement', p)} disabled={!isLive} />
+            <div className="anim-panel-in">
+              <FieldDiagram onSubmit={(p: FieldPosition[]) => submitDecision('field_placement', p)} disabled={!isLive} />
+            </div>
           )}
           {pendingDecisionType === 'bowling_change' && (
-            <BowlingPanel onSubmit={p => submitDecision('bowling_change', p)} disabled={!isLive} />
+            <div className="anim-panel-in">
+              <BowlingPanel onSubmit={p => submitDecision('bowling_change', p)} disabled={!isLive} />
+            </div>
           )}
           {pendingDecisionType === 'batting_order' && (
-            <BattingPanel onSubmit={p => submitDecision('batting_order', p)} disabled={!isLive} />
+            <div className="anim-panel-in">
+              <BattingPanel onSubmit={p => submitDecision('batting_order', p)} disabled={!isLive} />
+            </div>
           )}
           {(pendingDecisionType === 'powerplay' || pendingDecisionType === 'drs_review') && (
-            <PowerplayPanel type={pendingDecisionType as any} onSubmit={p => submitDecision(pendingDecisionType, p)} disabled={!isLive} />
+            <div className="anim-panel-in">
+              <PowerplayPanel type={pendingDecisionType as any} onSubmit={p => submitDecision(pendingDecisionType, p)} disabled={!isLive} />
+            </div>
           )}
 
           {!pendingDecisionType && (
             <div style={s.waiting}>
-              <div style={s.waitingOrb}>
+              <div style={s.waitingOrb} className={isLive ? 'anim-breathe' : ''}>
                 {isLive
                   ? <Activity size={32} color={colors.orange} />
                   : isCompleted
@@ -411,7 +425,7 @@ const s: Record<string, React.CSSProperties> = {
   guideStepDesc: { fontSize: 11, color: colors.textFaint, lineHeight: 1.5 },
   guideClose: { padding: '8px 16px', background: colors.orangeDim, border: `1px solid rgba(249,115,22,0.25)`, borderRadius: radius.sm, color: colors.orange, fontWeight: 700, cursor: 'pointer', fontSize: 12, flexShrink: 0, alignSelf: 'flex-end' },
 
-  alertBar: { position: 'relative', height: 52, overflow: 'hidden', borderBottom: '1px solid rgba(249,115,22,0.3)', background: 'rgba(249,115,22,0.03)' },
+  alertBar: { position: 'relative', height: 52, overflow: 'hidden', borderBottom: '1px solid rgba(249,115,22,0.3)', background: 'rgba(249,115,22,0.03)', animation: 'slideDown 0.3s cubic-bezier(0.34,1.2,0.64,1) both' },
   alertBarFill: { position: 'absolute', left: 0, top: 0, bottom: 0, transition: 'width 1s linear, background 0.5s', opacity: 0.15 },
   alertContent: { position: 'relative', zIndex: 1, height: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 24px' },
   alertLeft: { display: 'flex', alignItems: 'center', gap: 8 },

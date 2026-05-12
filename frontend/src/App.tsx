@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import Login from './pages/Login'
 import Home from './pages/Home'
@@ -14,10 +14,11 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
-export default function App() {
+function AnimatedRoutes() {
+  const location = useLocation()
   return (
-    <BrowserRouter>
-      <Routes>
+    <div key={location.pathname} className="anim-page" style={{ minHeight: '100vh' }}>
+      <Routes location={location}>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
         <Route path="/match/:id" element={<RequireAuth><MatchRoom /></RequireAuth>} />
@@ -28,6 +29,14 @@ export default function App() {
         <Route path="/leaderboard" element={<RequireAuth><Leaderboard /></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AnimatedRoutes />
     </BrowserRouter>
   )
 }

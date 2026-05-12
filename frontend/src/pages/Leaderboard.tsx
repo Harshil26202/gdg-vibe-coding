@@ -92,7 +92,7 @@ export default function Leaderboard() {
                   const rc = rankColor(rank)
                   const height = rank === 1 ? 110 : rank === 2 ? 85 : 70
                   return (
-                    <div key={entry.user_id} style={{ ...s.podiumItem, order: rank === 2 ? 0 : rank === 1 ? 1 : 2 }}>
+                    <div key={entry.user_id} style={{ ...s.podiumItem, order: rank === 2 ? 0 : rank === 1 ? 1 : 2, animation: 'fadeInUp 0.5s cubic-bezier(0.34,1.2,0.64,1) both', animationDelay: `${rank * 100}ms` }}>
                       <div style={s.podiumAvatar}>
                         <div style={{ ...s.podiumAvatarInner, background: `linear-gradient(135deg, ${rc}cc, ${rc}88)` }}>
                           {entry.username[0].toUpperCase()}
@@ -122,13 +122,17 @@ export default function Leaderboard() {
                 <span style={{ ...s.col, ...s.colAvg }}>Avg/Dec</span>
               </div>
 
-              {rest.map(entry => {
+              {rest.map((entry, i) => {
                 const isSelf = entry.user_id === user?.id
                 const avgPts = entry.decisions_made > 0 ? Math.round(entry.score / entry.decisions_made) : 0
                 return (
                   <div
                     key={entry.user_id}
-                    style={{ ...s.tableRow, ...(isSelf ? s.tableRowSelf : {}) }}
+                    style={{
+                      ...s.tableRow, ...(isSelf ? s.tableRowSelf : {}),
+                      animation: 'fadeInUp 0.4s ease both',
+                      animationDelay: `${i * 45}ms`,
+                    }}
                   >
                     <span style={{ ...s.col, ...s.colRank, color: colors.textFaint, fontWeight: 700 }}>#{entry.rank}</span>
                     <span style={{ ...s.col, ...s.colName }}>

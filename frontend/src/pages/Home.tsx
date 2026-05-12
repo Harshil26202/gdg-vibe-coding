@@ -149,8 +149,10 @@ export default function Home() {
           </div>
         ) : (
           <div style={s.matchGrid}>
-            {matches.map(m => (
-              <MatchCard key={m.id} match={m} onEnter={() => navigate(`/match/${m.id}`)} />
+            {matches.map((m, i) => (
+              <div key={m.id} style={{ animation: 'fadeInUp 0.45s ease both', animationDelay: `${i * 80}ms` }}>
+                <MatchCard match={m} onEnter={() => navigate(`/match/${m.id}`)} />
+              </div>
             ))}
           </div>
         )}
@@ -162,6 +164,7 @@ export default function Home() {
 function MatchCard({ match, onEnter }: { match: Match; onEnter: () => void }) {
   const isLive = match.status === 'live'
   const isUpcoming = match.status === 'upcoming'
+  const [hovered, setHovered] = useState(false)
 
   const statusColor = isLive ? colors.green : isUpcoming ? colors.blue : colors.textFaint
   const statusBg = isLive ? 'rgba(34,197,94,0.12)' : isUpcoming ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)'
@@ -169,7 +172,19 @@ function MatchCard({ match, onEnter }: { match: Match; onEnter: () => void }) {
   const statusLabel = isLive ? 'LIVE' : isUpcoming ? 'UPCOMING' : 'COMPLETED'
 
   return (
-    <div style={{ ...s.matchCard, ...(isLive ? s.matchCardLive : {}) }}>
+    <div
+      style={{
+        ...s.matchCard,
+        ...(isLive ? s.matchCardLive : {}),
+        transform: hovered ? 'translateY(-5px) scale(1.01)' : 'translateY(0) scale(1)',
+        boxShadow: hovered
+          ? `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px ${isLive ? 'rgba(34,197,94,0.4)' : 'rgba(249,115,22,0.25)'}`
+          : undefined,
+        transition: 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       {/* Status + venue */}
       <div style={s.matchTop}>
         <span style={{ ...s.badge, background: statusBg, color: statusColor, border: `1px solid ${statusBorder}` }}>
@@ -305,7 +320,7 @@ const s: Record<string, React.CSSProperties> = {
   },
   matchTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   badge: { fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 5, letterSpacing: 0.5 },
-  pulseDot: { width: 7, height: 7, borderRadius: '50%', background: colors.green, animation: 'pulse 1s infinite' },
+  pulseDot: { width: 7, height: 7, borderRadius: '50%', background: colors.green, animation: 'livePulse 1.4s ease-in-out infinite' },
   venue: { fontSize: 11, color: colors.textFaint },
   teamsRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   teamBlock: { display: 'flex', flexDirection: 'column', gap: 5 },
