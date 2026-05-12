@@ -1,4 +1,6 @@
 import type { LeaderboardEntry } from '../../types'
+import { colors, radius } from '../../styles/theme'
+import { Lightning, Trophy } from '../UI/Icons'
 
 interface Props {
   entries: LeaderboardEntry[]
@@ -6,28 +8,38 @@ interface Props {
   title?: string
 }
 
-export default function LeaderboardWidget({ entries, currentUserId, title = 'Leaderboard' }: Props) {
-  const medals = ['🥇', '🥈', '🥉']
+const RANK_COLORS = ['#f59e0b', '#94a3b8', '#f97316']
 
+export default function LeaderboardWidget({ entries, currentUserId, title = 'Leaderboard' }: Props) {
   return (
     <div style={styles.container}>
-      <h3 style={styles.title}>{title}</h3>
+      <div style={styles.header}>
+        <Trophy size={13} color={colors.yellow} />
+        <h3 style={styles.title}>{title}</h3>
+      </div>
       <div style={styles.list}>
-        {entries.slice(0, 10).map((entry) => (
-          <div
-            key={entry.user_id}
-            style={{ ...styles.row, ...(entry.user_id === currentUserId ? styles.rowSelf : {}) }}
-          >
-            <span style={styles.rank}>
-              {entry.rank <= 3 ? medals[entry.rank - 1] : `#${entry.rank}`}
-            </span>
-            <span style={styles.name}>{entry.username}</span>
-            <div style={styles.right}>
-              <span style={styles.score}>{entry.score}</span>
-              <span style={styles.decisions}>{entry.decisions_made} moves</span>
+        {entries.slice(0, 10).map((entry) => {
+          const isSelf = entry.user_id === currentUserId
+          const rankColor = entry.rank <= 3 ? RANK_COLORS[entry.rank - 1] : colors.textFaint
+          return (
+            <div
+              key={entry.user_id}
+              style={{ ...styles.row, ...(isSelf ? styles.rowSelf : {}) }}
+            >
+              <span style={{ ...styles.rank, color: rankColor, fontWeight: entry.rank <= 3 ? 900 : 600 }}>
+                #{entry.rank}
+              </span>
+              <span style={styles.name}>{entry.username}</span>
+              <div style={styles.right}>
+                <div style={styles.scoreRow}>
+                  <Lightning size={10} color={colors.orange} />
+                  <span style={styles.score}>{Math.round(entry.score)}</span>
+                </div>
+                <span style={styles.decisions}>{entry.decisions_made} moves</span>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
         {entries.length === 0 && (
           <p style={styles.empty}>No entries yet. Be the first!</p>
         )}
@@ -37,15 +49,24 @@ export default function LeaderboardWidget({ entries, currentUserId, title = 'Lea
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  container: { background: '#12121a', border: '1px solid #1e1e2e', borderRadius: 12, padding: 16 },
-  title: { fontWeight: 700, color: '#e2e8f0', fontSize: 15, marginBottom: 12 },
-  list: { display: 'flex', flexDirection: 'column', gap: 6 },
-  row: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: '#1e1e2e', borderRadius: 8 },
-  rowSelf: { borderLeft: '3px solid #f97316', background: '#f9731610' },
-  rank: { fontSize: 14, width: 28, textAlign: 'center' },
-  name: { flex: 1, fontSize: 14, fontWeight: 600, color: '#e2e8f0' },
-  right: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end' },
-  score: { fontSize: 14, fontWeight: 700, color: '#f97316' },
-  decisions: { fontSize: 11, color: '#64748b' },
-  empty: { color: '#64748b', fontSize: 13, padding: '8px 0' },
+  container: {
+    background: 'rgba(255,255,255,0.03)',
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.lg, padding: 16,
+  },
+  header: { display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 },
+  title: { fontWeight: 700, color: colors.text, fontSize: 13, margin: 0 },
+  list: { display: 'flex', flexDirection: 'column', gap: 5 },
+  row: {
+    display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px',
+    background: 'rgba(255,255,255,0.04)', borderRadius: radius.sm,
+  },
+  rowSelf: { borderLeft: `3px solid ${colors.orange}`, background: `${colors.orangeDim}` },
+  rank: { fontSize: 12, width: 26, textAlign: 'center', flexShrink: 0 },
+  name: { flex: 1, fontSize: 13, fontWeight: 600, color: colors.text },
+  right: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 },
+  scoreRow: { display: 'flex', alignItems: 'center', gap: 3 },
+  score: { fontSize: 13, fontWeight: 700, color: colors.orange },
+  decisions: { fontSize: 10, color: colors.textFaint },
+  empty: { color: colors.textFaint, fontSize: 12, padding: '8px 0', margin: 0 },
 }

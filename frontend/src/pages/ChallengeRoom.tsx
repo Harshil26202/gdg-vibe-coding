@@ -4,6 +4,7 @@ import { challengeApi } from '../api/challenge'
 import { matchesApi } from '../api/matches'
 import Navbar from '../components/UI/Navbar'
 import { colors, gradients, radius } from '../styles/theme'
+import { Swords, Target, Lightning } from '../components/UI/Icons'
 import type { Match } from '../types'
 
 type Phase = 'create' | 'lobby' | 'active' | 'joined'
@@ -80,7 +81,7 @@ export default function ChallengeRoom() {
         <button onClick={() => navigate(`/match/${matchId}`)} style={s.back}>← Back to Match</button>
 
         <div style={s.center}>
-          <div style={s.icon}>🤺</div>
+          <div style={s.icon}><Swords size={32} color={colors.green} /></div>
           <h1 style={s.title}>Head-to-Head Challenge</h1>
           <p style={s.sub}>{match?.title}</p>
 
@@ -88,9 +89,9 @@ export default function ChallengeRoom() {
             <div style={s.card}>
               <div style={s.section}>
                 <h3 style={s.sectionTitle}>Create a Challenge</h3>
-                <p style={s.sectionDesc}>Get a challenge ID, share with a friend. If they don't join in 30 seconds, Claude AI steps in as your opponent.</p>
+                <p style={s.sectionDesc}>Get a challenge ID, share with a friend. If they don't join in 30 seconds, an OpenAI coach steps in as your opponent.</p>
                 <button onClick={createChallenge} disabled={loading} style={s.primaryBtn}>
-                  {loading ? 'Creating...' : '🎯 Create Challenge Room'}
+                  {loading ? 'Creating...' : 'Create Challenge Room'}
                 </button>
               </div>
               <div style={s.divider}><span style={s.dividerText}>or</span></div>
@@ -154,17 +155,17 @@ export default function ChallengeRoom() {
                   <span style={s.vsBadge}>VS</span>
                   <div style={s.vsPlayer}>
                     <div style={{ ...s.vsAvatar, background: isAI ? gradients.purple : gradients.green }}>
-                      {isAI ? '🤖' : opponentName[0] || '?'}
+                      {isAI ? 'AI' : opponentName[0] || '?'}
                     </div>
                     <span style={s.vsName}>{opponentName || 'Opponent'}</span>
                     {isAI && <span style={s.aiBadge}>AI Coach</span>}
                   </div>
                 </div>
                 <p style={s.readyText}>
-                  {isAI ? 'Claude AI is ready as your opponent. May the best coach win!' : 'Your opponent has joined! Get ready to compete.'}
+                  {isAI ? 'OpenAI coach is ready as your opponent. May the best coach win!' : 'Your opponent has joined! Get ready to compete.'}
                 </p>
                 <button onClick={enterMatch} style={s.primaryBtn}>
-                  ⚡ Enter Match & Compete
+                  Enter Match & Compete
                 </button>
               </div>
             </div>

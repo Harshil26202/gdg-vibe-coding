@@ -153,7 +153,7 @@ export default function StrategyRoom() {
               <span style={s.cardTitle}>Key Bowling Roles</span>
               <div style={s.bowlerSection}>
                 <div>
-                  <p style={s.bowlerLabel}>⚡ Powerplay Bowler (Ov 1–6)</p>
+                  <p style={s.bowlerLabel}>Powerplay Bowler (Ov 1–6)</p>
                   <div style={s.bowlerGrid}>
                     {bowlers.map(b => (
                       <button key={b} onClick={() => setPpBowler(b)} style={{ ...s.bowlerBtn, ...(ppBowler === b ? s.bowlerBtnActive : {}) }}>{b}</button>
@@ -161,7 +161,7 @@ export default function StrategyRoom() {
                   </div>
                 </div>
                 <div>
-                  <p style={s.bowlerLabel}>💀 Death Overs Bowler (Ov 17–20)</p>
+                  <p style={s.bowlerLabel}>Death Overs Bowler (Ov 17–20)</p>
                   <div style={s.bowlerGrid}>
                     {bowlers.map(b => (
                       <button key={b} onClick={() => setDeathBowler(b)} style={{ ...s.bowlerBtn, ...(deathBowler === b ? { ...s.bowlerBtnActive, borderColor: colors.red, color: colors.red, background: colors.redDim } : {}) }}>{b}</button>
@@ -189,7 +189,7 @@ export default function StrategyRoom() {
               disabled={!complete || saving}
               style={{ ...s.saveBtn, ...(!complete ? s.saveBtnDisabled : {}) }}
             >
-              {saved ? '✓ Strategy Saved! Entering match...' : saving ? 'Saving...' : complete ? '🏏 Lock In Strategy & Enter Match' : `Complete strategy (${xi.length}/11 XI, ${openers.length}/2 openers)`}
+              {saved ? 'Strategy Saved! Entering match...' : saving ? 'Saving...' : complete ? 'Lock In Strategy & Enter Match' : `Complete strategy (${xi.length}/11 XI, ${openers.length}/2 openers)`}
             </button>
           </div>
         </div>

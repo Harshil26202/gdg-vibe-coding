@@ -1,332 +1,309 @@
-# 🏏 IPL Coaching Simulator
+# IPL Coaching Simulator 2026
 
-> **Prove you're the best cricket mind in the country.**
-> Make real-time tactical decisions during live IPL match simulations, get AI analysis on every call, and compete against fans nationwide on the leaderboard.
+> Make real-time tactical decisions during live IPL simulations. Compete against coaches across India. Powered by OpenAI.
 
----
-
-## ✨ Features
-
-### 1. 🧠 Pre-Match Strategy Room
-Before the toss, build your complete game plan:
-- Select your **Playing XI** from the full squad
-- Nominate your **Opening Pair**
-- Lock in your **Powerplay Bowler** and **Death Overs specialist**
-- Add freeform **Tactical Notes** for the match
-
-After the match, Claude AI scores how well your pre-match strategy held up against actual events.
+![Stack](https://img.shields.io/badge/stack-FastAPI%20%2B%20React%20%2B%20WebSockets-informational?style=flat-square&color=f97316)
+![OpenAI](https://img.shields.io/badge/AI-OpenAI%20gpt--4o--mini-412991?style=flat-square&logo=openai)
+![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?style=flat-square&logo=python)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript)
+![Docker](https://img.shields.io/badge/docker-compose-2496ED?style=flat-square&logo=docker)
+![Tests](https://img.shields.io/badge/tests-69%20passing-22c55e?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-94a3b8?style=flat-square)
 
 ---
 
-### 2. ⚡ Live Decision Windows (Core Feature)
-During ball-by-ball simulation, **decision windows open** at key moments with a **10-second countdown**:
+## What Is This?
 
-| Decision Type | When It Triggers |
-|---|---|
-| **Field Placement** | Before every over |
-| **Bowling Change** | End of every over |
-| **Batting Order** | When a wicket falls |
-| **Powerplay / DRS** | Specific match moments |
+IPL Coaching Simulator puts you in the dugout of a live IPL match simulation. At key moments — over changes, field setups, batting collapses — a decision window opens. You have seconds to make the call. OpenAI scores your decision on three axes, explains your tactical thinking, and ranks you against every other coach watching the same match.
 
-Each decision is scored out of **100 points** across 3 components:
+Think you know cricket better than an IPL captain? Prove it.
 
-| Component | Weight | Logic |
+---
+
+## Features
+
+### Real-Time Match Engine
+- Ball-by-ball WebSocket stream with auto-reconnect
+- Live scoreboard: current run rate, projected total, over-by-over ball display
+- Color-coded ball outcomes (boundaries, wickets, dots)
+- Live commentary driven by OpenAI
+
+### Decision System
+- **Field Placement** — drag and drop fielders on an interactive cricket oval
+- **Bowling Change** — select the next bowler with stats context
+- **Batting Order** — rearrange the batting lineup mid-innings
+- **Powerplay / DRS** — strategic calls with time pressure
+
+Every decision scores up to **100 points** across three dimensions:
+
+| Component | Max | What it measures |
 |---|---|---|
-| Captain Agreement | 40 pts | How closely your call matches what the actual captain did |
-| Historical Merit | 40 pts | What worked in similar IPL situations from historical data |
-| Tactical Rules | 20 pts | Cricket intelligence rules (slip for pace in powerplay, spin mid-overs, etc.) |
+| Captain Alignment | 40 pts | Match with expert captain's call |
+| Historical Merit | 40 pts | Backed by historical IPL data |
+| Tactical Rules | 20 pts | Adherence to coaching principles |
 
-After each decision, **OpenAI gpt-4o-mini** provides a 2-3 sentence tactical breakdown comparing your call to the captain's and historical trends.
+### AI Scoring & Explanations
+- Tactical score breakdown shown after every decision
+- OpenAI-generated analysis explaining why your call was right or wrong
+- Grade labels: **Elite** (85+) · **Sharp** (70+) · **Decent** (50+) · **Learning** (30+) · **Rookie** (<30)
 
----
+### Leaderboard
+- Global national leaderboard with podium display
+- Per-match rankings update after every decision
+- Tracks total score, decision count, and average per decision
 
-### 3. 🤺 Head-to-Head Challenge Mode
-Challenge another fan to a tactical duel:
-1. Create a challenge room → share the **Challenge ID**
-2. Opponent joins within **30 seconds**
-3. If no one joins, **an AI coach steps in as your opponent** automatically
-4. Both coaches make decisions for the same balls — highest scorer wins
+### Strategy Room
+- Pre-match tactical brief — set your read of the pitch, conditions, and batting order strategy before the match starts
+- OpenAI evaluates your strategy against actual match progression
 
----
+### Challenge Mode (Head-to-Head)
+- Challenge any registered coach to a same-match comparison
+- Real-time H2H score tracking
+- AI fallback auto-generates a rival coach if no human accepts within 30 s
 
-### 4. 🎙️ AI Commentator
-After each over, **gpt-4o-mini generates a Harsha Bhogle-style commentary summary**:
-- References your tactical decisions ("Your slip cordon paid off — Chahar got that edge!")
-- Delivered via **browser Web Speech API** (toggle mute anytime)
-- Text displayed even when audio is off
+### Coach Report Card
+- Full post-match AI analysis: headline, strengths, weaknesses, signature move, overall verdict
+- Downloadable as a shareable PNG card (html2canvas)
+- Coach rating: **Rookie → Club Pro → State Level → National Prospect → Elite Coach**
 
----
+### Tactical Replay Room
+- Replay any over from the match
+- Switch your past decisions and see counterfactual outcomes scored live by AI
 
-### 5. ⏪ Tactical Replay Room
-After the match ends, **replay any over** and try different decisions:
-- Browse all overs from the match
-- Try alternative field placements, bowling changes, or batting calls
-- See your score for the hypothetical decision
-- AI explains the counterfactual: "If you'd placed deep midwicket instead…"
-
----
-
-### 6. 📊 Coach Report Card
-Post-match personalised report generated by OpenAI:
-- **Coach Rating**: Rookie → Club Pro → State Level → National Prospect → Elite Coach
-- Your tactical **strengths and weaknesses** by decision type
-- Your **signature move** (e.g. "Aggressive spin in the powerplay")
-- An overall **coaching verdict**
-- **Download as PNG** (html2canvas) and share on social media
+### Live Commentary
+- Over-by-over commentary generated by OpenAI
+- Toggle audio via browser Web Speech API (text-to-speech)
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                  React Frontend                  │
-│  Vite + TypeScript + Zustand + React Router      │
-│                                                  │
-│  Pages: Home, MatchRoom, StrategyRoom,           │
-│         ChallengeRoom, ReplayRoom, ReportCard    │
-└──────────────────┬──────────────────────────────┘
-                   │ REST + WebSocket
-┌──────────────────▼──────────────────────────────┐
+│                   Browser (React)                │
+│  ┌───────────┐  ┌────────────┐  ┌────────────┐  │
+│  │ Scoreboard│  │DecisionPanel│  │Leaderboard │  │
+│  └─────┬─────┘  └─────┬──────┘  └─────┬──────┘  │
+│        │   Zustand store (matchStore)  │         │
+│        └──────────────┬───────────────┘         │
+│              WebSocket│REST                      │
+└──────────────────────┼──────────────────────────┘
+                        │
+┌──────────────────────▼──────────────────────────┐
 │               FastAPI Backend                    │
-│                                                  │
-│  Auth      → JWT (python-jose + passlib)         │
-│  Matches   → Ball-by-ball simulation engine      │
-│  Decisions → 3-component scoring engine          │
-│  AI        → OpenAI gpt-4o-mini                  │
-│  Challenge → Matchmaking + AI fallback           │
-│  Replay    → Historical decision analysis        │
-│  Report    → Post-match coach report             │
-└──────┬───────────────────────┬───────────────────┘
-       │                       │
-┌──────▼──────┐      ┌─────────▼────────┐
-│ PostgreSQL  │      │      Redis        │
-│             │      │                  │
-│ users       │      │ Live match state  │
-│ matches     │      │ Decision windows  │
-│ balls       │      │ Leaderboard sets  │
-│ decisions   │      │ WS session map   │
-│ strategies  │      └──────────────────┘
-│ challenges  │
-│ commentaries│
-└─────────────┘
+│  ┌─────────┐  ┌──────────┐  ┌────────────────┐  │
+│  │MatchSim │  │AIService │  │ScoringEngine   │  │
+│  │ (async) │  │(OpenAI)  │  │(3-axis scorer) │  │
+│  └────┬────┘  └────┬─────┘  └────────────────┘  │
+│       │             │                            │
+│  ┌────▼─────────────▼──────────┐                │
+│  │     PostgreSQL + Redis       │                │
+│  │  (match state + pub/sub)     │                │
+│  └─────────────────────────────┘                │
+└─────────────────────────────────────────────────┘
+```
+
+### Key Files
+
+```
+backend/
+  app/
+    main.py                  # FastAPI app + WS router
+    models.py                # SQLAlchemy ORM (Match, Ball, Decision, User)
+    match_simulator.py       # Ball-by-ball engine, WebSocket broadcaster
+    scoring_engine.py        # 3-axis decision scorer
+    ai_service.py            # OpenAI gpt-4o-mini integration
+    commentary_service.py    # Live over commentary
+    replay.py                # Counterfactual replay engine
+    routers/
+      matches.py             # Match CRUD + start endpoint
+      decisions.py           # Decision submit + history
+      leaderboard.py         # Global + per-match rankings
+      report.py              # Post-match coach report
+
+frontend/src/
+  components/
+    Scoreboard/              # Live score, run rate, projection, balls
+    TacticalFeedback/        # Post-decision score breakdown (3 axes)
+    DecisionPanel/           # Bowling, Batting, Powerplay panels
+    FieldDiagram/            # SVG cricket field with drag-drop fielders
+    Commentary/              # Live commentary box with TTS
+    Leaderboard/             # In-match leaderboard widget
+    UI/                      # Navbar, Icons (all SVG, no emoji)
+  pages/
+    Home.tsx                 # Match listing, scoring guide, feature showcase
+    MatchRoom.tsx            # Main game view (scoreboard + decisions + leaderboard)
+    Login.tsx                # Auth with two-column layout
+    Leaderboard.tsx          # National rankings with podium
+    ReportCard.tsx           # Post-match coach card (downloadable)
+    StrategyRoom.tsx         # Pre-match tactical brief
+    ChallengeRoom.tsx        # Head-to-head mode
+    ReplayRoom.tsx           # Tactical replay with counterfactuals
+  store/
+    matchStore.ts            # Zustand store — match state + timer + decisions
+  hooks/
+    useMatchWebSocket.ts     # WS connection with auto-reconnect + message routing
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Docker + Docker Compose
-- An **OpenAI API key** (for AI tactical analysis, commentary, and coach reports)
+- An OpenAI API key
 
-### 1. Clone & configure
+### Setup
+
 ```bash
-git clone git@github.com:Harshil26202/gdg-vibe-coding.git
+git clone https://github.com/Harshil26202/gdg-vibe-coding.git
 cd gdg-vibe-coding
+
+# Create environment file
 cp .env.example .env
+# Edit .env and add your OPENAI_API_KEY
 ```
 
-Edit `.env`:
-```
-OPENAI_API_KEY=sk-proj-...your-key-here...
+### Environment Variables
+
+```env
+OPENAI_API_KEY=sk-...
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/iplcoach
+REDIS_URL=redis://redis:6379
+SECRET_KEY=your-secret-key-here
 ```
 
-### 2. Start everything
+### Run with Docker
+
 ```bash
 docker compose up --build
 ```
 
-This starts:
-- **PostgreSQL** on port 5432
-- **Redis** on port 6379
-- **FastAPI** on [http://localhost:8000](http://localhost:8000)
-- **React** on [http://localhost:5173](http://localhost:5173)
-
-### 3. Play
-1. Open [http://localhost:5173](http://localhost:5173)
-2. Register an account
-3. From the Home page, open a match → click **Strategy Room** to build your XI
-4. Click **Start Simulation** to begin the ball-by-ball match
-5. Decision windows will appear every ~12 seconds — you have 10 seconds to submit
-6. After the match: check your **Coach Report Card** and replay overs in the **Replay Room**
-
----
-
-## 🔌 API Reference
-
-Full interactive docs at `http://localhost:8000/docs`
-
-| Router | Endpoint | Description |
-|---|---|---|
-| Auth | `POST /auth/register` | Create account |
-| Auth | `POST /auth/login` | Get JWT token |
-| Auth | `GET /auth/me` | Current user |
-| Matches | `GET /matches` | List all matches |
-| Matches | `POST /matches/{id}/start` | Start simulation |
-| Matches | `WS /matches/{id}/ws` | Live WebSocket feed |
-| Decisions | `POST /decisions` | Submit a fan decision |
-| Decisions | `GET /decisions/my/{match_id}` | My decisions for a match |
-| Leaderboard | `GET /leaderboard/global` | Top 50 overall |
-| Leaderboard | `GET /leaderboard/match/{id}` | Per-match ranking |
-| Strategy | `POST /strategy` | Save pre-match strategy |
-| Challenge | `POST /challenge/create` | Create H2H room |
-| Challenge | `POST /challenge/{id}/join` | Join H2H room |
-| Replay | `GET /replay/{match_id}/overs` | List replayable overs |
-| Replay | `POST /replay/try` | Try a hypothetical decision |
-| Report | `GET /report/coach/{match_id}` | Post-match coach report |
-
----
-
-## 🗂️ Project Structure
-
-```
-gdg-vibe-coding/
-├── docker-compose.yml
-├── .env.example
-├── backend/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── app/
-│       ├── main.py              # FastAPI app + lifespan
-│       ├── config.py            # Settings (pydantic-settings)
-│       ├── database.py          # Async SQLAlchemy engine
-│       ├── models/              # SQLAlchemy ORM models
-│       │   ├── user.py
-│       │   ├── match.py         # Match + Ball
-│       │   ├── decision.py
-│       │   ├── historical.py
-│       │   ├── strategy.py      # Pre-match strategy
-│       │   └── challenge.py     # H2H + over commentary
-│       ├── schemas/             # Pydantic request/response
-│       ├── routers/             # FastAPI route handlers
-│       │   ├── auth.py
-│       │   ├── matches.py       # + WebSocket endpoint
-│       │   ├── decisions.py
-│       │   ├── leaderboard.py
-│       │   ├── strategy.py
-│       │   ├── challenge.py
-│       │   ├── replay.py
-│       │   └── report.py
-│       ├── services/
-│       │   ├── auth_service.py
-│       │   ├── match_engine.py      # Ball-by-ball simulator
-│       │   ├── websocket_manager.py # Broadcast hub
-│       │   ├── scoring_engine.py    # 3-component scorer
-│       │   ├── ai_service.py        # Claude tactical explanations
-│       │   └── commentary_service.py # Over commentary + report
-│       └── data/
-│           ├── mock_matches/        # IPL match scripts (JSON)
-│           └── historical_situations.json
-└── frontend/
-    ├── Dockerfile
-    ├── package.json
-    └── src/
-        ├── api/                 # Axios API clients
-        ├── components/
-        │   ├── UI/              # Navbar, GlassCard
-        │   ├── Scoreboard/
-        │   ├── FieldDiagram/    # Interactive SVG oval
-        │   ├── DecisionPanel/   # Bowling, Batting, Powerplay
-        │   ├── TacticalFeedback/
-        │   ├── Leaderboard/
-        │   └── Commentary/      # AI Commentator + TTS
-        ├── hooks/               # useAuth, useMatchWebSocket
-        ├── pages/
-        │   ├── Login.tsx
-        │   ├── Home.tsx
-        │   ├── MatchRoom.tsx    # Main simulator
-        │   ├── StrategyRoom.tsx
-        │   ├── ChallengeRoom.tsx
-        │   ├── ReplayRoom.tsx
-        │   ├── ReportCard.tsx
-        │   └── Leaderboard.tsx
-        ├── store/               # Zustand (auth + match)
-        ├── styles/              # theme.ts (colors, gradients)
-        └── types/               # TypeScript interfaces
-```
-
----
-
-## 🔑 Environment Variables
-
-| Variable | Required | Description |
-|---|---|---|
-| `OPENAI_API_KEY` | Yes | OpenAI key for AI tactical analysis & commentary |
-| `DATABASE_URL` | Auto-set | PostgreSQL async connection string |
-| `REDIS_URL` | Auto-set | Redis connection string |
-| `SECRET_KEY` | Change in prod | JWT signing key |
-| `CORS_ORIGINS` | Auto-set | Comma-separated allowed origins |
-
-> **Note:** AI features (tactical explanations, commentary, report card) fall back to pre-written templates when `OPENAI_API_KEY` is not set, so the simulator is fully playable without an API key.
-
----
-
-## 🧠 Scoring System Deep Dive
-
-### Captain Agreement (0–40 pts)
-- **Field Placement**: Measures positional similarity between your field and the captain's using a normalized overlap score across 9 positions
-- **Bowling Change**: 40 pts for exact match, 0 otherwise
-- **Batting Order**: 40 pts for selecting the same batsman the captain sent in
-- **Powerplay/DRS**: 40 pts if your binary call matches the captain's
-
-### Historical Merit (0–40 pts)
-Each match situation is hashed by: `(innings, over_bucket, wickets_down, run_rate_bucket, bowler_type, batsman_hand)`. The database contains optimal decisions for each situation based on IPL history. Your decision is compared to the historically optimal one.
-
-### Tactical Rules (0–20 pts)
-A rule engine checks your decision against cricket intelligence:
-- Slip cordon for pace bowlers in the powerplay
-- Deep midwicket protection for left-handed hitters
-- No slips in death overs (boundary riders instead)
-- Spin in overs 7–14, pace at death
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
+| Service | URL |
 |---|---|
-| Frontend | React 18 + Vite + TypeScript |
-| State | Zustand |
-| Routing | React Router v6 |
-| HTTP | Axios |
-| Real-time | Native WebSocket + Web Speech API |
-| Image Export | html2canvas |
-| Backend | FastAPI + Python 3.12 |
-| ORM | SQLAlchemy (async) |
-| Auth | JWT (python-jose + passlib/bcrypt) |
-| Database | PostgreSQL 16 |
-| Cache / LB | Redis 7 |
-| AI | OpenAI gpt-4o-mini |
-| Dev | Docker Compose |
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:8000 |
+| API Docs | http://localhost:8000/docs |
+| PostgreSQL | localhost:5432 |
+| Redis | localhost:6379 |
+
+### Run Locally (Dev)
+
+```bash
+# Backend
+cd backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+
+# Frontend (separate terminal)
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
-## 🧪 Running Tests
-
-The backend has a full E2E test suite — **69 tests, ~66% coverage** — using an in-memory SQLite database and mocked Redis (no Docker needed).
+## Testing
 
 ```bash
 cd backend
-pip install -r requirements.txt
-PYTHONPATH=. python3 -m pytest tests/ -v
+pytest -v
 ```
 
-| Module | Tests | Coverage |
-|---|---|---|
-| Scoring engine (unit) | 22 | 100% logic paths |
-| Auth | 8 | register, login, JWT |
-| Matches | 6 | list, detail, state, start |
-| Decisions | 6 | submit, duplicate, window |
-| Leaderboard | 4 | global, per-match |
-| Strategy | 6 | create, upsert, get |
-| Challenge | 6 | create, join, AI fallback |
-| Replay | 5 | overs, balls, hypothetical |
-| Report | 5 | coach report, commentary |
-| Health | 2 | /health, /openapi.json |
+**69 tests · 66% coverage** — covers auth, match lifecycle, decision scoring, leaderboard, report generation, replay, and H2H challenge flows.
+
+```
+tests/
+  test_auth.py           # Register, login, JWT validation
+  test_matches.py        # CRUD, start, state, WebSocket broadcast
+  test_decisions.py      # Submit, score, history
+  test_leaderboard.py    # Global + per-match rankings
+  test_report.py         # Coach report generation
+  test_replay.py         # Counterfactual replay
+  test_challenge.py      # H2H challenge lifecycle
+  test_scoring_engine.py # 3-axis scorer unit tests
+```
+
+Test stack: `pytest-asyncio` + `httpx` + SQLite in-memory + mocked Redis.
 
 ---
 
-## 📄 License
+## Scoring Explained
 
-MIT — built for the GDG Vibe Coding Hackathon.
+When you make a decision, the backend runs three independent evaluations:
+
+**1. Captain Alignment (40 pts)**
+Compares your decision to what a historical IPL captain would choose in the same game situation — over, wickets, run rate, phase of play. Uses OpenAI to model expert captain behaviour.
+
+**2. Historical Merit (40 pts)**
+Evaluates your choice against outcomes from similar historical IPL situations stored in the database. Decisions that have historically led to better win probabilities score higher.
+
+**3. Tactical Rules (20 pts)**
+Hard-coded cricket coaching principles: powerplay aggression thresholds, death-over bowling choices, fielding ring requirements during restrictions, DRS usage patterns, etc.
+
+**Grade bands:**
+```
+85-100  Elite            World-class tactical mind
+70-84   Sharp            Strong cricket instincts
+50-69   Decent           Solid understanding
+30-49   Learning         Building your game
+ 0-29   Rookie           Room to grow
+```
+
+---
+
+## API Reference
+
+Full interactive docs at `http://localhost:8000/docs`.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/auth/register` | Create account |
+| `POST` | `/auth/login` | Get JWT token |
+| `GET` | `/matches` | List all matches |
+| `POST` | `/matches/{id}/start` | Start match simulation |
+| `GET` | `/matches/{id}/state` | Full match state |
+| `WS` | `/matches/{id}/ws` | Real-time ball feed |
+| `POST` | `/decisions` | Submit a decision |
+| `GET` | `/decisions/my/{match_id}` | My decisions for a match |
+| `GET` | `/leaderboard/global` | National leaderboard |
+| `GET` | `/leaderboard/match/{id}` | Per-match rankings |
+| `GET` | `/report/{match_id}` | Coach report card |
+| `POST` | `/replay/{match_id}` | Counterfactual replay |
+| `POST` | `/challenge` | Create H2H challenge |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18 · TypeScript · Vite · Zustand · React Router |
+| UI | Inline React styles · Custom SVG icon set · No CSS framework |
+| Real-time | WebSocket (native browser API) with auto-reconnect |
+| Backend | FastAPI · Python 3.9 · SQLAlchemy (async) · Alembic |
+| Database | PostgreSQL 15 (persistent) · Redis 7 (pub/sub + cache) |
+| AI | OpenAI gpt-4o-mini (scoring, commentary, reports, replay) |
+| Auth | JWT (python-jose) · bcrypt password hashing |
+| Testing | pytest · pytest-asyncio · httpx · SQLite in-memory |
+| Infra | Docker Compose (4 services) |
+
+---
+
+## Contributing
+
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Run tests: `cd backend && pytest`
+4. Submit a pull request
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
+
+---
+
+*Built for GDG Vibe Coding 2026 · Powered by OpenAI*

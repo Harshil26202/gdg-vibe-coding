@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { reportApi } from '../api/report'
 import Navbar from '../components/UI/Navbar'
 import { colors, gradients, radius } from '../styles/theme'
+import { Rewind } from '../components/UI/Icons'
 
 interface OverMeta { innings: number; over_no: number }
 interface BallData {
@@ -69,7 +70,7 @@ export default function ReplayRoom() {
       <div style={s.page}>
         <button onClick={() => navigate(`/match/${matchId}`)} style={s.back}>← Back to Match</button>
 
-        <h1 style={s.title}>⏪ Tactical Replay Room</h1>
+        <h1 style={s.title}>Tactical Replay Room</h1>
         <p style={s.sub}>Rewind any over from this match and try different coaching decisions. See how your call compares to the captain's.</p>
 
         <div style={s.layout}>
@@ -95,7 +96,7 @@ export default function ReplayRoom() {
           <div style={s.main}>
             {!selected && (
               <div style={s.placeholder}>
-                <span style={s.placeholderIcon}>⏪</span>
+                <span style={s.placeholderIcon}><Rewind size={36} color={colors.textFaint} /></span>
                 <p style={s.placeholderText}>Select an over from the left to replay it</p>
               </div>
             )}
@@ -144,7 +145,7 @@ export default function ReplayRoom() {
                   )}
 
                   <button onClick={tryDecision} disabled={loading} style={s.tryBtn}>
-                    {loading ? 'Analysing...' : '🔬 Analyse My Decision'}
+                    {loading ? 'Analysing...' : 'Analyse My Decision'}
                   </button>
                 </div>
 
