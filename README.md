@@ -14,7 +14,7 @@
 
 ## Demo
 
-<video src="docs/assets/demo.mp4" autoplay loop muted playsinline width="100%"></video>
+<video src="docs/assets/demo.mp4" autoplay loop muted playsinline controls width="100%"></video>
 
 *Login → fill credentials → Home (card hover lift) → Match Room → Start Match → Live scoreboard → Make a captain decision → Tactical Feedback modal → Leaderboard podium → Coach Report Card → Strategy Room*
 
