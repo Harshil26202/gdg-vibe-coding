@@ -14,9 +14,12 @@
 
 ## Demo
 
+<!-- GitHub renders the <video> tag natively; GIF is the fallback for other renderers -->
+<video src="docs/assets/demo.mp4" autoplay loop muted playsinline width="100%"></video>
+
 ![IPL Coaching Simulator 2026 — Feature Walkthrough](docs/assets/demo.gif)
 
-*Login → Home → Match Room → Live Simulation → Leaderboard → Coach Report → Strategy Room*
+*Login → fill credentials → Home (card hover lift) → Match Room → Start Match → Live scoreboard → Make a captain decision → Tactical Feedback modal → Leaderboard podium → Coach Report Card → Strategy Room*
 
 ---
 
