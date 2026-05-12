@@ -12,6 +12,14 @@
 
 ---
 
+## Demo
+
+![IPL Coaching Simulator 2026 — Feature Walkthrough](docs/assets/demo.gif)
+
+*Login → Home → Match Room → Live Simulation → Leaderboard → Coach Report → Strategy Room*
+
+---
+
 ## What Is This?
 
 IPL Coaching Simulator puts you in the dugout of a live IPL match simulation. At key moments — over changes, field setups, batting collapses — a decision window opens. You have seconds to make the call. OpenAI scores your decision on three axes, explains your tactical thinking, and ranks you against every other coach watching the same match.
