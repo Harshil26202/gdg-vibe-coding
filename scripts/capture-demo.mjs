@@ -3,7 +3,13 @@
  * Uses Playwright video recording + injected cursor overlay + simulated clicks.
  *
  * Run: node scripts/capture-demo.mjs
- * Requires: app running on localhost:5173 (docker compose up)
+ * Requires: app running on localhost:5173 + backend on localhost:8000
+ *
+ * BEFORE RUNNING — reset match 2 to upcoming:
+ *   docker exec gdgvibecoding-postgres-1 psql -U ipl_user -d ipl_simulator -c \
+ *     "UPDATE matches SET status='upcoming', current_over=0, current_ball=0,
+ *      current_innings=1, team_a_score=0, team_a_wickets=0, team_b_score=0,
+ *      team_b_wickets=0, batting_team=NULL, bowling_team=NULL WHERE id=2;"
  */
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
@@ -26,268 +32,240 @@ const BASE  = 'http://localhost:5173';
 const EMAIL = 'demo@iplcoach.dev';
 const PASS  = 'demo1234';
 
-/* ─── Cursor overlay (injected into every page) ─────────────────────────── */
+/* ─── Cursor overlay ────────────────────────────────────────────────────── */
 const CURSOR_SCRIPT = `
 (function() {
   if (document.getElementById('__demo_cursor__')) return;
-
-  /* ring that ripples on click */
   const ring = document.createElement('div');
-  ring.id = '__demo_cursor_ring__';
+  ring.id = '__demo_ring__';
   Object.assign(ring.style, {
     position:'fixed', width:'48px', height:'48px', borderRadius:'50%',
     border:'2.5px solid rgba(249,115,22,0.9)', pointerEvents:'none',
     transform:'translate(-50%,-50%) scale(0)', opacity:'0',
-    zIndex:'99998', transition:'none', top:'0', left:'0',
+    zIndex:'99998', transition:'none', top:'-100px', left:'-100px',
   });
   document.body.appendChild(ring);
 
-  /* dot that follows the cursor */
   const dot = document.createElement('div');
   dot.id = '__demo_cursor__';
   Object.assign(dot.style, {
     position:'fixed', width:'22px', height:'22px', borderRadius:'50%',
-    background:'rgba(249,115,22,0.5)', border:'2px solid rgba(249,115,22,1)',
+    background:'rgba(249,115,22,0.55)', border:'2px solid rgba(249,115,22,1)',
     pointerEvents:'none', transform:'translate(-50%,-50%)',
-    transition:'left 0.06s ease, top 0.06s ease',
-    zIndex:'99999', boxShadow:'0 0 14px rgba(249,115,22,0.7)',
-    top:'0', left:'0',
+    transition:'left 0.07s ease, top 0.07s ease',
+    zIndex:'99999', boxShadow:'0 0 14px rgba(249,115,22,0.6)',
+    top:'-100px', left:'-100px',
   });
   document.body.appendChild(dot);
 
-  /* label that appears on hover/click */
-  const label = document.createElement('div');
-  label.id = '__demo_label__';
-  Object.assign(label.style, {
-    position:'fixed', background:'rgba(249,115,22,0.92)', color:'#fff',
-    fontSize:'11px', fontFamily:'system-ui,sans-serif', fontWeight:'700',
-    padding:'3px 9px', borderRadius:'12px', pointerEvents:'none',
-    zIndex:'99997', opacity:'0', transition:'opacity 0.2s',
-    whiteSpace:'nowrap', top:'0', left:'0',
+  const lbl = document.createElement('div');
+  lbl.id = '__demo_lbl__';
+  Object.assign(lbl.style, {
+    position:'fixed', background:'rgba(15,15,26,0.92)',
+    border:'1px solid rgba(249,115,22,0.5)',
+    color:'#f97316', fontSize:'11px', fontFamily:'system-ui,sans-serif',
+    fontWeight:'700', padding:'4px 10px', borderRadius:'12px',
+    pointerEvents:'none', zIndex:'99997', opacity:'0',
+    transition:'opacity 0.2s', whiteSpace:'nowrap',
+    top:'-100px', left:'-100px',
   });
-  document.body.appendChild(label);
+  document.body.appendChild(lbl);
 
   document.addEventListener('mousemove', e => {
     dot.style.left = e.clientX + 'px';
     dot.style.top  = e.clientY + 'px';
   });
-
   document.addEventListener('click', e => {
-    ring.style.left       = e.clientX + 'px';
-    ring.style.top        = e.clientY + 'px';
+    ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px';
     ring.style.transition = 'none';
-    ring.style.transform  = 'translate(-50%,-50%) scale(0)';
-    ring.style.opacity    = '1';
+    ring.style.transform = 'translate(-50%,-50%) scale(0)'; ring.style.opacity = '1';
     requestAnimationFrame(() => {
-      ring.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
-      ring.style.transform  = 'translate(-50%,-50%) scale(2.2)';
-      ring.style.opacity    = '0';
+      ring.style.transition = 'transform 0.45s ease-out, opacity 0.45s ease-out';
+      ring.style.transform = 'translate(-50%,-50%) scale(2.4)'; ring.style.opacity = '0';
     });
   });
-
-  /* expose helpers so Playwright evaluate() can drive label */
-  window.__showLabel = (text, x, y) => {
-    label.textContent = text;
-    label.style.left    = (x + 18) + 'px';
-    label.style.top     = (y - 12) + 'px';
-    label.style.opacity = '1';
+  window.__label = (t,x,y) => {
+    lbl.textContent = t;
+    lbl.style.left = (x+18)+'px'; lbl.style.top = (y-16)+'px'; lbl.style.opacity = '1';
   };
-  window.__hideLabel = () => { label.style.opacity = '0'; };
+  window.__unlabel = () => { lbl.style.opacity = '0'; };
 })();
 `;
 
-/* ─── Helpers ────────────────────────────────────────────────────────────── */
-async function ensureCursor(page) {
+async function injectCursor(page) {
   await page.evaluate(CURSOR_SCRIPT).catch(() => {});
 }
 
-/** Move mouse smoothly to element centre, show label, click, then wait. */
-async function uiClick(page, selector, label = '', waitMs = 700) {
+async function moveTo(page, x, y) {
+  await page.mouse.move(x, y, { steps: 20 });
+}
+
+/** Move to element centre, show label, click, wait. */
+async function tap(page, selector, label = '', waitMs = 700) {
   const loc = page.locator(selector).first();
-  await loc.waitFor({ state: 'visible', timeout: 6000 }).catch(() => {});
+  await loc.waitFor({ state: 'visible', timeout: 7000 }).catch(() => {});
   const box = await loc.boundingBox().catch(() => null);
   if (!box) { await loc.click().catch(() => {}); await page.waitForTimeout(waitMs); return; }
-  const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
-  await page.mouse.move(cx, cy, { steps: 18 });
-  await page.waitForTimeout(220);
-  if (label) await page.evaluate(([t, x, y]) => window.__showLabel?.(t, x, y), [label, cx, cy]);
-  await page.waitForTimeout(300);
+  const cx = Math.round(box.x + box.width / 2);
+  const cy = Math.round(box.y + box.height / 2);
+  await page.mouse.move(cx, cy, { steps: 22 });
+  await page.waitForTimeout(250);
+  if (label) await page.evaluate(([t,x,y]) => window.__label?.(t,x,y), [label,cx,cy]);
+  await page.waitForTimeout(350);
   await page.mouse.click(cx, cy);
-  if (label) setTimeout(() => page.evaluate(() => window.__hideLabel?.()).catch(() => {}), 900);
+  if (label) setTimeout(() => page.evaluate(() => window.__unlabel?.()).catch(() => {}), 900);
   await page.waitForTimeout(waitMs);
 }
 
-/** Hover over element centre with label — no click. */
-async function uiHover(page, selector, label = '', waitMs = 700) {
+/** Hover without clicking. */
+async function hover(page, selector, label = '', waitMs = 800) {
   const loc = page.locator(selector).first();
   const box = await loc.boundingBox().catch(() => null);
   if (!box) return;
-  const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
-  await page.mouse.move(cx, cy, { steps: 16 });
-  await page.waitForTimeout(120);
-  if (label) await page.evaluate(([t, x, y]) => window.__showLabel?.(t, x, y), [label, cx, cy]);
+  const cx = Math.round(box.x + box.width / 2);
+  const cy = Math.round(box.y + box.height / 2);
+  await page.mouse.move(cx, cy, { steps: 18 });
+  if (label) await page.evaluate(([t,x,y]) => window.__label?.(t,x,y), [label,cx,cy]);
   await page.waitForTimeout(waitMs);
-  if (label) await page.evaluate(() => window.__hideLabel?.()).catch(() => {});
+  await page.evaluate(() => window.__unlabel?.()).catch(() => {});
 }
 
-/** Type character-by-character to look natural. */
-async function uiType(page, selector, text, label = '') {
+/** Type with realistic per-character delay. */
+async function typeIn(page, selector, text) {
   const loc = page.locator(selector).first();
+  await loc.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
   const box = await loc.boundingBox().catch(() => null);
-  if (box) await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
+  if (box) await page.mouse.move(box.x+box.width/2, box.y+box.height/2, { steps: 10 });
   await loc.click().catch(() => {});
   await page.waitForTimeout(200);
-  if (label) await page.evaluate(([t, x, y]) => window.__showLabel?.(t, x, y), [label, box?.x ?? 0, box?.y ?? 0]);
   for (const ch of text) {
     await page.keyboard.type(ch);
-    await page.waitForTimeout(45 + Math.random() * 55);
+    await page.waitForTimeout(50 + Math.random() * 60);
   }
-  await page.evaluate(() => window.__hideLabel?.()).catch(() => {});
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(300);
 }
 
-/* ─── Main recording ─────────────────────────────────────────────────────── */
+/** Show a floating label at an arbitrary position. */
+async function showLabel(page, text, x, y, durationMs = 1200) {
+  await page.evaluate(([t,x,y]) => window.__label?.(t,x,y), [text,x,y]);
+  await page.waitForTimeout(durationMs);
+  await page.evaluate(() => window.__unlabel?.()).catch(() => {});
+}
+
+/* ─── Main ──────────────────────────────────────────────────────────────── */
 (async () => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: false,   // visible window → proper React rendering
+    args: ['--window-size=1280,800', '--disable-blink-features=AutomationControlled'],
+  });
   const ctx = await browser.newContext({
     viewport: { width: W, height: H },
     deviceScaleFactor: 1.5,
     recordVideo: { dir: VIDEO_DIR, size: { width: W, height: H } },
   });
   const page = await ctx.newPage();
+  page.on('load', () => injectCursor(page).catch(() => {}));
 
-  // Re-inject cursor after every full navigation
-  page.on('load', () => page.evaluate(CURSOR_SCRIPT).catch(() => {}));
+  console.log('\n=== IPL Coach 2026 — Demo Recording ===\n');
 
-  console.log('\n=== IPL Coach 2026 — Interactive Demo Recording ===\n');
-
-  /* ── 1. Login page ───────────────────────────────────────────────────────── */
-  console.log('[1/12] Login page — initial view');
+  /* ── 1. Login page ─────────────────────────────────────────────────────── */
+  console.log('[1/10] Login page');
   await page.goto(`${BASE}/login`);
-  await ensureCursor(page);
-  await page.waitForTimeout(1800);
-
-  // Hover logo / headline
-  await page.mouse.move(640, 200, { steps: 20 });
-  await page.waitForTimeout(900);
-
-  /* ── 2. Fill login credentials ───────────────────────────────────────────── */
-  console.log('[2/12] Filling login form');
-  await uiType(page, 'input[type="email"]',    EMAIL, 'Enter email');
-  await uiType(page, 'input[type="password"]', PASS,  'Enter password');
-  await page.waitForTimeout(400);
-
-  /* ── 3. Submit → Home ────────────────────────────────────────────────────── */
-  console.log('[3/12] Submitting login');
-  await uiClick(page, 'button[type="submit"]', 'Sign In →', 400);
-  await page.waitForURL(`${BASE}/`, { timeout: 10000 }).catch(() => {});
-  await ensureCursor(page);
-  await page.waitForTimeout(2200);   // let page-fade + card stagger finish
-
-  /* ── 4. Home — hover match card ──────────────────────────────────────────── */
-  console.log('[4/12] Home — browsing match cards');
-  // Hover first match card (lift animation)
-  const card1 = page.locator('div[style*="cursor: pointer"]').first();
-  const card1Box = await card1.boundingBox().catch(() => null);
-  if (card1Box) {
-    await page.mouse.move(card1Box.x + card1Box.width / 2, card1Box.y + card1Box.height / 2, { steps: 20 });
-    await page.evaluate(([t,x,y]) => window.__showLabel?.(t,x,y), ['Hover: lift animation', card1Box.x + card1Box.width/2, card1Box.y + card1Box.height/2]);
-    await page.waitForTimeout(1400);
-    await page.evaluate(() => window.__hideLabel?.());
-  }
-  // Scroll to reveal second card
-  await page.mouse.wheel(0, 280);
-  await page.waitForTimeout(700);
-  await page.mouse.wheel(0, -280);
+  await page.waitForLoadState('networkidle');
+  await injectCursor(page);
+  await page.waitForTimeout(2000);
+  await moveTo(page, 640, 300);
   await page.waitForTimeout(600);
 
-  /* ── 5. Navbar — hover each link ─────────────────────────────────────────── */
-  console.log('[5/12] Navbar links');
-  await uiHover(page, 'a[href="/leaderboard"]', 'Leaderboard', 600);
-  await uiHover(page, 'a[href="/"]',            'Home',        500);
+  /* ── 2. Fill credentials ───────────────────────────────────────────────── */
+  console.log('[2/10] Filling credentials');
+  await typeIn(page, 'input[type="email"]',    EMAIL);
+  await typeIn(page, 'input[type="password"]', PASS);
+  await page.waitForTimeout(500);
 
-  /* ── 6. Enter Match Room (upcoming) ──────────────────────────────────────── */
-  console.log('[6/12] Match Room — upcoming state');
-  await page.goto(`${BASE}/match/2`);
-  await ensureCursor(page);
+  /* ── 3. Sign in → Home ─────────────────────────────────────────────────── */
+  console.log('[3/10] Signing in');
+  await tap(page, 'button[type="submit"]', 'Sign In →', 400);
+  await page.waitForURL(`${BASE}/`, { timeout: 12000 }).catch(() => {});
+  await page.waitForLoadState('networkidle');
+  await injectCursor(page);
   await page.waitForTimeout(2200);
 
-  // Hover breadcrumb
-  await uiHover(page, 'a[href="/"]', 'Breadcrumb nav', 500);
-  await page.waitForTimeout(300);
-
-  // Hover the "How to play" toggle if present
-  const howToPlay = page.locator('button:has-text("How to play")').first();
-  if (await howToPlay.isVisible().catch(() => false)) {
-    await uiClick(page, 'button:has-text("How to play")', 'Open guide', 900);
-    await uiClick(page, 'button:has-text("How to play")', 'Close guide', 500);
+  /* ── 4. Home — hover first match card (lift animation) ─────────────────── */
+  console.log('[4/10] Home — card hover');
+  const cards = page.locator('div').filter({ hasText: /RCB|CSK|MI|KKR/ }).first();
+  const cb = await cards.boundingBox().catch(() => null);
+  if (cb) {
+    await page.mouse.move(cb.x + cb.width/2, cb.y + cb.height/2, { steps: 22 });
+    await showLabel(page, 'Hover → lift animation', cb.x + cb.width/2, cb.y - 20, 1400);
   }
-
-  /* ── 7. Start match + live view ───────────────────────────────────────────── */
-  console.log('[7/12] Starting match simulation');
-  await uiClick(page, 'button:has-text("Start Match")', 'Start Match!', 400);
-  await page.waitForTimeout(4000);   // WebSocket connects, ball delivered
-  await ensureCursor(page);
-  await page.waitForTimeout(1000);
-
-  // Scroll so decision panel is visible
-  await page.mouse.wheel(0, 300);
+  await page.mouse.wheel(0, 350);
+  await page.waitForTimeout(700);
+  await page.mouse.wheel(0, -350);
   await page.waitForTimeout(600);
 
-  /* ── 8. Make a decision ───────────────────────────────────────────────────── */
-  console.log('[8/12] Making a captain decision');
-  // Try generic option buttons inside decision panel
-  const optionBtn = page.locator('button').filter({ hasText: /^[A-Z]/ }).nth(1);
-  if (await optionBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await uiHover(page, 'button', 'Hover option', 600);
-    await uiClick(page, 'button:has-text("Confirm")', 'Confirm decision', 400)
-      .catch(() => optionBtn.click().catch(() => {}));
-    await page.waitForTimeout(3000);   // wait for feedback modal
-    await ensureCursor(page);
-    await page.waitForTimeout(1200);
-    // Close feedback
-    await uiClick(page, 'button:has-text("Continue")', 'Continue Watching', 600)
-      .catch(() => {});
+  /* ── 5. Navigate to Navbar links ──────────────────────────────────────── */
+  console.log('[5/10] Navbar');
+  await hover(page, 'a[href="/leaderboard"]', 'Leaderboard', 600);
+  await hover(page, 'a[href="/"]',            'Matches',     500);
+
+  /* ── 6. Match room — upcoming ─────────────────────────────────────────── */
+  console.log('[6/10] Match Room — upcoming');
+  await page.goto(`${BASE}/match/2`);
+  await page.waitForLoadState('networkidle');
+  await injectCursor(page);
+  await page.waitForTimeout(2200);
+
+  // Show breadcrumb
+  await hover(page, 'nav a, a[href="/"]', 'Breadcrumb nav', 600);
+
+  // Show how-to-play if present
+  const howBtn = page.locator('button').filter({ hasText: /how to play/i }).first();
+  if (await howBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await tap(page, 'button:has-text("How to play")', 'Open guide', 1000);
+    await tap(page, 'button:has-text("How to play")', 'Close guide', 500);
   }
-  await page.mouse.wheel(0, -300);
-  await page.waitForTimeout(600);
 
-  /* ── 9. Scoreboard animations ─────────────────────────────────────────────── */
-  console.log('[9/12] Scoreboard — score counter & ball-by-ball');
-  await page.mouse.move(300, 300, { steps: 12 });
-  await page.waitForTimeout(2000);
+  /* ── 7. Start match → live state ─────────────────────────────────────── */
+  console.log('[7/10] Starting match');
+  const startBtn = page.locator('button').filter({ hasText: /start match/i }).first();
+  if (await startBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await tap(page, 'button:has-text("Start Match")', 'Start Match!', 500);
+    await page.waitForTimeout(5000);   // wait for WS + first ball
+    await injectCursor(page);
+    await page.waitForTimeout(1500);
 
-  /* ── 10. Leaderboard ──────────────────────────────────────────────────────── */
-  console.log('[10/12] Leaderboard');
+    // Scroll to show scoreboard + decision panel
+    await page.mouse.wheel(0, 250);
+    await page.waitForTimeout(800);
+    await showLabel(page, 'Live scoreboard', 200, 200, 1000);
+    await page.mouse.wheel(0, -250);
+    await page.waitForTimeout(500);
+  } else {
+    await showLabel(page, 'Match room UI', 640, 400, 1200);
+  }
+
+  /* ── 8. Leaderboard ───────────────────────────────────────────────────── */
+  console.log('[8/10] Leaderboard');
   await page.goto(`${BASE}/leaderboard`);
-  await ensureCursor(page);
-  await page.waitForTimeout(2200);   // podium + row stagger animations
+  await page.waitForLoadState('networkidle');
+  await injectCursor(page);
+  await page.waitForTimeout(2400);   // podium + row stagger
 
-  // Hover a podium entry
-  const podiumEntry = page.locator('div[style*="flex-direction: column"]').nth(2);
-  const podiumBox = await podiumEntry.boundingBox().catch(() => null);
-  if (podiumBox) {
-    await page.mouse.move(podiumBox.x + podiumBox.width/2, podiumBox.y + podiumBox.height/2, { steps: 15 });
-    await page.evaluate(([t,x,y]) => window.__showLabel?.(t,x,y), ['Top 3 Podium', podiumBox.x + podiumBox.width/2, podiumBox.y]);
-    await page.waitForTimeout(1000);
-    await page.evaluate(() => window.__hideLabel?.());
-  }
-
-  // Scroll through table rows
+  await showLabel(page, 'Top 3 Podium', 500, 220, 1000);
   await page.mouse.wheel(0, 400);
   await page.waitForTimeout(800);
   await page.mouse.wheel(0, -400);
   await page.waitForTimeout(600);
 
-  /* ── 11. Report Card ──────────────────────────────────────────────────────── */
-  console.log('[11/12] Coach Report Card');
+  /* ── 9. Coach Report Card ─────────────────────────────────────────────── */
+  console.log('[9/10] Report Card (match 1)');
   await page.goto(`${BASE}/match/1/report`);
-  await ensureCursor(page);
+  await page.waitForLoadState('networkidle');
+  await injectCursor(page);
   await page.waitForTimeout(2800);
 
-  await page.evaluate(() => window.__showLabel?.('AI-powered session analysis', 640, 80));
-  await page.waitForTimeout(1000);
-  await page.evaluate(() => window.__hideLabel?.());
+  await showLabel(page, 'AI-powered session report', 640, 80, 1200);
   await page.mouse.wheel(0, 400);
   await page.waitForTimeout(800);
   await page.mouse.wheel(0, 400);
@@ -295,67 +273,78 @@ async function uiType(page, selector, text, label = '') {
   await page.mouse.wheel(0, -800);
   await page.waitForTimeout(600);
 
-  /* ── 12. Strategy Room + fade out ────────────────────────────────────────── */
-  console.log('[12/12] Strategy Room');
+  /* ── 10. Strategy Room ────────────────────────────────────────────────── */
+  console.log('[10/10] Strategy Room');
   await page.goto(`${BASE}/match/2/strategy`);
-  await ensureCursor(page);
+  await page.waitForLoadState('networkidle');
+  await injectCursor(page);
   await page.waitForTimeout(2200);
-  await page.mouse.move(640, 400, { steps: 18 });
+  await moveTo(page, 640, 400);
   await page.waitForTimeout(600);
   await page.mouse.wheel(0, 350);
   await page.waitForTimeout(800);
   await page.mouse.wheel(0, -350);
-  await page.waitForTimeout(1200);
-
-  // ── final pause ──
   await page.waitForTimeout(1500);
 
-  console.log('\n=== Stopping recording ===');
-  const videoPath = await page.video()?.path();
+  console.log('\n=== Stopping ===');
+  const rawPath = await page.video()?.path();
   await page.close();
   await ctx.close();
   await browser.close();
 
-  if (!videoPath || !existsSync(videoPath)) {
-    console.error('ERROR: No video file found at', videoPath);
-    process.exit(1);
+  if (!rawPath || !existsSync(rawPath)) {
+    console.error('No video at', rawPath); process.exit(1);
   }
-  console.log(`Raw WebM: ${videoPath}`);
+  console.log('Raw WebM:', rawPath);
 
-  /* ─── Convert → MP4 (primary deliverable) ─────────────────────────────── */
-  const mp4Out = path.join(ASSETS_DIR, 'demo.mp4');
-  console.log('\n=== Encoding MP4 ===');
+  /* ─── Encode MP4 (short, ~60 s highlight) ─────────────────────────────── */
+  // Get actual duration (format-level, works on Playwright webm)
+  const durRaw = execSync(
+    `ffprobe -v error -show_entries format=duration -of csv=p=0 "${rawPath}"`
+  ).toString().trim();
+  const dur = parseFloat(durRaw) || 999;
+  console.log(`Total duration: ${Math.round(dur)}s`);
+
+  // Short: first 75 s
+  const shortEnd = Math.min(75, dur);
+  const shortMp4 = path.join(ASSETS_DIR, 'demo.mp4');
+  console.log('\n=== Encoding short MP4 ===');
   execSync(
-    `ffmpeg -y -i "${videoPath}" ` +
-    `-vf "scale=1200:-2:flags=lanczos" ` +
-    `-c:v libx264 -crf 20 -preset fast -movflags +faststart ` +
-    `"${mp4Out}"`,
+    `ffmpeg -y -i "${rawPath}" -t ${shortEnd} ` +
+    `-vf "scale=1200:-2:flags=lanczos" -c:v libx264 -crf 20 -preset fast -movflags +faststart ` +
+    `"${shortMp4}"`,
     { stdio: 'inherit', shell: '/bin/zsh' }
   );
 
-  /* ─── Convert → GIF (README embed) ────────────────────────────────────── */
-  const gifOut      = path.join(ASSETS_DIR, 'demo.gif');
-  const paletteFile = path.join(VIDEO_DIR,  'palette.png');
-  const gifFilter   = 'fps=14,scale=1100:-1:flags=lanczos';
-
-  console.log('\n=== Encoding GIF (2-pass) ===');
+  // Extended: full video
+  const extMp4 = path.join(ASSETS_DIR, 'demo-highlight.mp4');
+  console.log('\n=== Encoding extended MP4 ===');
   execSync(
-    `ffmpeg -y -i "${mp4Out}" ` +
-    `-vf "${gifFilter},palettegen=stats_mode=diff" ` +
-    `"${paletteFile}"`,
-    { stdio: 'inherit', shell: '/bin/zsh' }
-  );
-  execSync(
-    `ffmpeg -y -i "${mp4Out}" -i "${paletteFile}" ` +
-    `-filter_complex "${gifFilter}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5" ` +
-    `"${gifOut}"`,
+    `ffmpeg -y -i "${rawPath}" ` +
+    `-vf "scale=1200:-2:flags=lanczos" -c:v libx264 -crf 22 -preset fast -movflags +faststart ` +
+    `"${extMp4}"`,
     { stdio: 'inherit', shell: '/bin/zsh' }
   );
 
-  const statKb = f => Math.round(
-    execSync(`stat -f %z "${f}"`).toString().trim() / 1024
+  /* ─── Encode GIF from short MP4 ───────────────────────────────────────── */
+  const gifOut = path.join(ASSETS_DIR, 'demo.gif');
+  const pal    = path.join(VIDEO_DIR,  'palette.png');
+  const filt   = 'fps=10,scale=760:-1:flags=lanczos';
+  console.log('\n=== Encoding GIF ===');
+  execSync(`ffmpeg -y -i "${shortMp4}" -vf "${filt},palettegen=stats_mode=diff" "${pal}"`,
+    { stdio: 'inherit', shell: '/bin/zsh' });
+  execSync(
+    `ffmpeg -y -i "${shortMp4}" -i "${pal}" ` +
+    `-filter_complex "${filt}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5" "${gifOut}"`,
+    { stdio: 'inherit', shell: '/bin/zsh' }
   );
-  console.log(`\nMP4 → docs/assets/demo.mp4  (${statKb(mp4Out)} KB)`);
-  console.log(`GIF → docs/assets/demo.gif  (${statKb(gifOut)} KB)`);
+
+  const kb = f => (existsSync(f)
+    ? `${(parseInt(execSync(`stat -f %z "${f}"`).toString().trim())/1024/1024).toFixed(1)} MB`
+    : 'missing');
+
+  console.log(`\ndemo.mp4          : ${kb(shortMp4)}`);
+  console.log(`demo-highlight.mp4: ${kb(extMp4)}`);
+  console.log(`demo.gif          : ${kb(gifOut)}`);
   console.log('\nAll done!');
 })();
