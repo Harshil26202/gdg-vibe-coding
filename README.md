@@ -16,7 +16,20 @@
 
 <video src="docs/assets/demo.mp4" autoplay loop muted playsinline controls width="100%"></video>
 
-*Login → fill credentials → Home (card hover lift) → Match Room → Start Match → Live scoreboard → Make a captain decision → Tactical Feedback modal → Leaderboard podium → Coach Report Card → Strategy Room*
+> **Quick tour** — 60 seconds covering every major screen.
+> Use the controls to pause, scrub, or go fullscreen.
+
+### Media Assets
+
+Pick the format that suits you:
+
+| Format | File | Duration | Best for |
+|--------|------|----------|----------|
+| MP4 (short) | [docs/assets/demo.mp4](docs/assets/demo.mp4) | ~60 s | Embedded above — play/pause/fullscreen |
+| MP4 (extended) | [docs/assets/demo-highlight.mp4](docs/assets/demo-highlight.mp4) | ~3 min | Full walkthrough with every interaction |
+| GIF | [docs/assets/demo.gif](docs/assets/demo.gif) | ~60 s | Platforms that don't support video tags |
+
+**Screens covered:** Login → Home (card hover) → Match Room → Start Match → Live scoreboard counter → Captain decision panel → Tactical Feedback modal → Leaderboard podium → Coach Report Card → Strategy Room
 
 ---
 
