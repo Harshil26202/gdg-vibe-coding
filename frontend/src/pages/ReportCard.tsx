@@ -171,7 +171,7 @@ export default function ReportCard() {
             <p style={s.verdictText}>{data.report.overall_verdict}</p>
           </div>
 
-          <div style={s.cardFooter}>IPL Coach 2026 • Powered by OpenAI</div>
+          <div style={s.cardFooter}>IPL Coach 2026 • Built with Claude Code</div>
         </div>
       </div>
     </div>
