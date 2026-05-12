@@ -1,75 +1,80 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { matchesApi } from '../api/matches'
-import { useAuth } from '../hooks/useAuth'
 import type { Match } from '../types'
+import Navbar from '../components/UI/Navbar'
+import { colors, gradients, radius, shadow } from '../styles/theme'
 
 export default function Home() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
-  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
     matchesApi.list().then(r => setMatches(r.data)).finally(() => setLoading(false))
   }, [])
 
-  const statusColor = { upcoming: '#3b82f6', live: '#22c55e', completed: '#94a3b8' }
-  const statusLabel = { upcoming: 'Upcoming', live: '● LIVE', completed: 'Completed' }
+  const features = [
+    { icon: '🧠', title: 'Pre-Match Strategy', desc: 'Build your XI and game plan before the toss', color: colors.purple },
+    { icon: '⚡', title: 'Live Decisions', desc: 'Real-time field & bowling calls with 10s timer', color: colors.orange },
+    { icon: '🤺', title: 'Head-to-Head', desc: 'Challenge a friend or battle Claude AI', color: colors.green },
+    { icon: '🎙️', title: 'AI Commentator', desc: 'Harsha Bhogle-style over summaries by Claude', color: colors.blue },
+    { icon: '⏪', title: 'Tactical Replay', desc: 'Rewind any over and try different calls', color: colors.yellow },
+    { icon: '📊', title: 'Coach Report', desc: 'Personalised post-match rating and shareable card', color: colors.red },
+  ]
 
   return (
-    <div style={styles.page}>
-      <nav style={styles.nav}>
-        <div style={styles.navLeft}>
-          <span style={{ fontSize: 24 }}>🏏</span>
-          <span style={styles.navTitle}>IPL Coaching Simulator</span>
-        </div>
-        <div style={styles.navRight}>
-          <button onClick={() => navigate('/leaderboard')} style={styles.navBtn}>Leaderboard</button>
-          <span style={styles.navUser}>@{user?.username}</span>
-          <span style={styles.navScore}>{Math.round(user?.total_score || 0)} pts</span>
-          <button onClick={logout} style={styles.logoutBtn}>Logout</button>
-        </div>
-      </nav>
+    <div style={{ minHeight: '100vh', background: gradients.page }}>
+      <Navbar />
 
-      <div style={styles.hero}>
-        <h1 style={styles.heroTitle}>Be the Coach. <span style={{ color: '#f97316' }}>Beat the Captain.</span></h1>
-        <p style={styles.heroSub}>Make real-time tactical decisions during live IPL matches. Earn points when your cricket IQ matches or beats the captain's moves.</p>
+      {/* Hero */}
+      <div style={s.hero}>
+        <div style={s.heroChip}>🏆 IPL 2024 Season</div>
+        <h1 style={s.heroTitle}>
+          Be the Coach.<br />
+          <span style={{ background: 'linear-gradient(90deg, #f97316, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Beat the Captain.
+          </span>
+        </h1>
+        <p style={s.heroSub}>
+          Make real-time tactical decisions during live IPL simulations. Earn points, get Claude's analysis, and prove you're the sharpest cricket mind in the country.
+        </p>
+        <div style={s.heroStats}>
+          {[['🏏', '5 Matches'], ['⚡', '4 Decision Types'], ['🤖', 'Claude AI'], ['🏆', 'Live Leaderboard']].map(([icon, label]) => (
+            <div key={label} style={s.statChip}><span>{icon}</span><span style={s.statLabel}>{label}</span></div>
+          ))}
+        </div>
       </div>
 
-      <div style={styles.content}>
-        <h2 style={styles.sectionTitle}>Matches</h2>
-        {loading ? (
-          <p style={{ color: '#94a3b8' }}>Loading matches...</p>
-        ) : (
-          <div style={styles.grid}>
-            {matches.map(m => (
-              <div key={m.id} style={styles.matchCard}>
-                <div style={styles.matchHeader}>
-                  <span style={{ ...styles.badge, color: statusColor[m.status], borderColor: statusColor[m.status] }}>
-                    {statusLabel[m.status]}
-                  </span>
-                  <span style={styles.venue}>{m.venue}</span>
-                </div>
-                <div style={styles.teams}>
-                  <span style={styles.teamName}>{m.team_a}</span>
-                  <span style={styles.vs}>vs</span>
-                  <span style={styles.teamName}>{m.team_b}</span>
-                </div>
-                {m.status !== 'upcoming' && (
-                  <div style={styles.score}>
-                    {m.team_a_score}/{m.team_a_wickets} · {m.team_b_score}/{m.team_b_wickets}
-                  </div>
-                )}
-                <button
-                  style={{ ...styles.enterBtn, ...(m.status === 'completed' ? styles.enterBtnDisabled : {}) }}
-                  onClick={() => navigate(`/match/${m.id}`)}
-                  disabled={m.status === 'completed'}
-                >
-                  {m.status === 'live' ? 'Join Live Match' : m.status === 'upcoming' ? 'Preview Match' : 'View Summary'}
-                </button>
+      {/* Feature grid */}
+      <div style={s.section}>
+        <div style={s.featureGrid}>
+          {features.map(f => (
+            <div key={f.title} style={{ ...s.featureCard, borderColor: `${f.color}22` }}>
+              <span style={{ ...s.featureIcon, background: `${f.color}18`, color: f.color }}>{f.icon}</span>
+              <div>
+                <div style={s.featureTitle}>{f.title}</div>
+                <div style={s.featureDesc}>{f.desc}</div>
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Matches */}
+      <div style={s.section}>
+        <div style={s.sectionHeader}>
+          <h2 style={s.sectionTitle}>Matches</h2>
+          <div style={s.liveDot} />
+        </div>
+
+        {loading ? (
+          <div style={s.loadingGrid}>
+            {[1, 2, 3].map(i => <div key={i} style={s.skeleton} />)}
+          </div>
+        ) : (
+          <div style={s.matchGrid}>
+            {matches.map(m => <MatchCard key={m.id} match={m} onEnter={() => navigate(`/match/${m.id}`)} />)}
           </div>
         )}
       </div>
@@ -77,30 +82,87 @@ export default function Home() {
   )
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', background: '#0a0a0f' },
-  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 32px', borderBottom: '1px solid #1e1e2e', background: '#0d0d17' },
-  navLeft: { display: 'flex', alignItems: 'center', gap: 10 },
-  navTitle: { fontSize: 18, fontWeight: 700, color: '#f97316' },
-  navRight: { display: 'flex', alignItems: 'center', gap: 16 },
-  navBtn: { padding: '8px 16px', background: '#1e1e2e', border: '1px solid #2d2d3d', borderRadius: 8, color: '#e2e8f0', cursor: 'pointer', fontSize: 14 },
-  navUser: { color: '#94a3b8', fontSize: 14 },
-  navScore: { color: '#f97316', fontWeight: 700 },
-  logoutBtn: { padding: '8px 16px', background: 'transparent', border: '1px solid #3f3f5a', borderRadius: 8, color: '#94a3b8', cursor: 'pointer', fontSize: 13 },
-  hero: { padding: '64px 32px 32px', textAlign: 'center', maxWidth: 700, margin: '0 auto' },
-  heroTitle: { fontSize: 42, fontWeight: 800, color: '#e2e8f0', lineHeight: 1.2 },
-  heroSub: { fontSize: 17, color: '#94a3b8', marginTop: 16, lineHeight: 1.6 },
-  content: { padding: '32px', maxWidth: 1100, margin: '0 auto' },
-  sectionTitle: { fontSize: 22, fontWeight: 700, color: '#e2e8f0', marginBottom: 20 },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 },
-  matchCard: { background: '#12121a', border: '1px solid #1e1e2e', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 },
-  matchHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  badge: { fontSize: 12, fontWeight: 700, border: '1px solid', borderRadius: 20, padding: '3px 10px' },
-  venue: { fontSize: 12, color: '#94a3b8' },
-  teams: { display: 'flex', alignItems: 'center', gap: 12 },
-  teamName: { fontSize: 16, fontWeight: 700, color: '#e2e8f0', flex: 1 },
-  vs: { color: '#94a3b8', fontSize: 13, fontWeight: 500 },
-  score: { fontSize: 20, fontWeight: 700, color: '#f97316' },
-  enterBtn: { padding: '12px', background: '#f97316', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 14 },
-  enterBtnDisabled: { background: '#2d2d3d', color: '#64748b', cursor: 'not-allowed' },
+function MatchCard({ match, onEnter }: { match: Match; onEnter: () => void }) {
+  const isLive = match.status === 'live'
+  const isUpcoming = match.status === 'upcoming'
+
+  return (
+    <div style={s.matchCard}>
+      <div style={s.matchCardInner}>
+        <div style={s.matchTop}>
+          <span style={{ ...s.badge, ...(isLive ? s.badgeLive : isUpcoming ? s.badgeUpcoming : s.badgeDone) }}>
+            {isLive && <span style={s.pulseDot} />}
+            {isLive ? 'LIVE' : isUpcoming ? 'UPCOMING' : 'COMPLETED'}
+          </span>
+          <span style={s.venue}>{match.venue}</span>
+        </div>
+
+        <div style={s.teamsRow}>
+          <div style={s.teamBlock}>
+            <div style={s.teamLogo}>{match.team_a[0]}</div>
+            <span style={s.teamName}>{match.team_a}</span>
+            {match.status !== 'upcoming' && <span style={s.teamScore}>{match.team_a_score}/{match.team_a_wickets}</span>}
+          </div>
+          <span style={s.vs}>vs</span>
+          <div style={{ ...s.teamBlock, alignItems: 'flex-end' }}>
+            <div style={s.teamLogo}>{match.team_b[0]}</div>
+            <span style={s.teamName}>{match.team_b}</span>
+            {match.status !== 'upcoming' && <span style={s.teamScore}>{match.team_b_score}/{match.team_b_wickets}</span>}
+          </div>
+        </div>
+
+        <button
+          style={{ ...s.enterBtn, ...(match.status === 'completed' ? s.enterBtnGhost : isLive ? s.enterBtnLive : s.enterBtnDefault) }}
+          onClick={onEnter}
+        >
+          {isLive ? '🔴 Join Live' : isUpcoming ? '🏏 Enter Match' : '📊 View Summary'}
+        </button>
+      </div>
+
+      {/* glow overlay for live */}
+      {isLive && <div style={s.liveGlow} />}
+    </div>
+  )
+}
+
+const s: Record<string, React.CSSProperties> = {
+  hero: { textAlign: 'center', padding: '80px 24px 48px', maxWidth: 720, margin: '0 auto' },
+  heroChip: { display: 'inline-block', background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.25)', color: colors.orange, fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 20, marginBottom: 20, letterSpacing: 0.5 },
+  heroTitle: { fontSize: 'clamp(36px, 6vw, 58px)', fontWeight: 900, lineHeight: 1.1, color: colors.text, marginBottom: 20 },
+  heroSub: { fontSize: 17, color: colors.textMuted, lineHeight: 1.7, maxWidth: 560, margin: '0 auto 32px' },
+  heroStats: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' },
+  statChip: { display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '6px 14px', fontSize: 13 },
+  statLabel: { color: colors.textMuted, fontWeight: 500 },
+  section: { maxWidth: 1200, margin: '0 auto', padding: '0 24px 48px' },
+  sectionHeader: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 },
+  sectionTitle: { fontSize: 22, fontWeight: 800, color: colors.text },
+  liveDot: { width: 8, height: 8, borderRadius: '50%', background: colors.green, boxShadow: `0 0 8px ${colors.green}` },
+  featureGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12, marginBottom: 48 },
+  featureCard: { display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', background: 'rgba(255,255,255,0.025)', border: '1px solid', borderRadius: radius.md, backdropFilter: 'blur(10px)' },
+  featureIcon: { width: 44, height: 44, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 },
+  featureTitle: { fontSize: 14, fontWeight: 700, color: colors.text, marginBottom: 2 },
+  featureDesc: { fontSize: 12, color: colors.textMuted, lineHeight: 1.5 },
+  matchGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 },
+  loadingGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 },
+  skeleton: { height: 180, background: 'rgba(255,255,255,0.04)', borderRadius: radius.lg, animation: 'pulse 1.5s ease-in-out infinite' },
+  matchCard: { position: 'relative', borderRadius: radius.lg, overflow: 'hidden' },
+  matchCardInner: { background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: radius.lg, padding: 24, backdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', gap: 20, position: 'relative', zIndex: 1 },
+  liveGlow: { position: 'absolute', inset: 0, borderRadius: radius.lg, background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.2)', pointerEvents: 'none' },
+  matchTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  badge: { fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 5, letterSpacing: 0.5 },
+  badgeLive: { background: 'rgba(34,197,94,0.15)', color: colors.green, border: '1px solid rgba(34,197,94,0.3)' },
+  badgeUpcoming: { background: 'rgba(59,130,246,0.12)', color: colors.blue, border: '1px solid rgba(59,130,246,0.25)' },
+  badgeDone: { background: 'rgba(255,255,255,0.06)', color: colors.textMuted, border: '1px solid rgba(255,255,255,0.08)' },
+  pulseDot: { width: 7, height: 7, borderRadius: '50%', background: colors.green, animation: 'pulse 1s infinite' },
+  venue: { fontSize: 11, color: colors.textFaint },
+  teamsRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  teamBlock: { display: 'flex', flexDirection: 'column', gap: 4 },
+  teamLogo: { width: 36, height: 36, borderRadius: 10, background: 'rgba(249,115,22,0.15)', border: '1px solid rgba(249,115,22,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: colors.orange },
+  teamName: { fontSize: 13, fontWeight: 700, color: colors.text },
+  teamScore: { fontSize: 22, fontWeight: 900, color: colors.orange },
+  vs: { fontSize: 12, color: colors.textFaint, fontWeight: 600 },
+  enterBtn: { width: '100%', padding: '13px', border: 'none', borderRadius: radius.md, fontWeight: 700, cursor: 'pointer', fontSize: 14, transition: 'all 0.15s' },
+  enterBtnLive: { background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' },
+  enterBtnDefault: { background: 'linear-gradient(135deg, #f97316, #ea580c)', color: '#fff', boxShadow: '0 4px 16px rgba(249,115,22,0.3)' },
+  enterBtnGhost: { background: 'rgba(255,255,255,0.05)', color: colors.textMuted, border: '1px solid rgba(255,255,255,0.08)' },
 }

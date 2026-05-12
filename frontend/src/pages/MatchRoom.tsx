@@ -6,6 +6,7 @@ import { client } from '../api/client'
 import { useMatchWebSocket } from '../hooks/useMatchWebSocket'
 import { useMatchStore } from '../store/matchStore'
 import { useAuth } from '../hooks/useAuth'
+import Navbar from '../components/UI/Navbar'
 import Scoreboard from '../components/Scoreboard/Scoreboard'
 import FieldDiagram from '../components/FieldDiagram/FieldDiagram'
 import BowlingPanel from '../components/DecisionPanel/BowlingPanel'
@@ -13,7 +14,9 @@ import BattingPanel from '../components/DecisionPanel/BattingPanel'
 import PowerplayPanel from '../components/DecisionPanel/PowerplayPanel'
 import TacticalFeedback from '../components/TacticalFeedback/TacticalFeedback'
 import LeaderboardWidget from '../components/Leaderboard/LeaderboardWidget'
+import CommentaryBox from '../components/Commentary/CommentaryBox'
 import type { Decision, LeaderboardEntry, FieldPosition } from '../types'
+import { colors, gradients, radius } from '../styles/theme'
 
 export default function MatchRoom() {
   const { id } = useParams<{ id: string }>()
@@ -30,25 +33,19 @@ export default function MatchRoom() {
   useMatchWebSocket(matchId)
 
   useEffect(() => {
-    matchesApi.getState(matchId).then(r => {
-      useMatchStore.getState().setMatchState(r.data)
-    })
+    matchesApi.getState(matchId).then(r => useMatchStore.getState().setMatchState(r.data))
     decisionsApi.myDecisions(matchId).then(r => setMyDecisions(r.data)).catch(() => {})
     client.get<LeaderboardEntry[]>(`/leaderboard/match/${matchId}`).then(r => setLeaderboard(r.data)).catch(() => {})
   }, [matchId])
 
-  // Countdown timer
   useEffect(() => {
     if (timerRef.current) clearInterval(timerRef.current)
     if (pendingDecisionType && decisionSecondsLeft > 0) {
-      timerRef.current = setInterval(() => {
-        useMatchStore.getState().tickTimer()
-      }, 1000)
+      timerRef.current = setInterval(() => useMatchStore.getState().tickTimer(), 1000)
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
   }, [pendingDecisionType])
 
-  // Refresh leaderboard after each decision
   useEffect(() => {
     if (myDecisions.length > 0) {
       client.get<LeaderboardEntry[]>(`/leaderboard/match/${matchId}`).then(r => setLeaderboard(r.data)).catch(() => {})
@@ -89,8 +86,12 @@ export default function MatchRoom() {
 
   if (!matchState) {
     return (
-      <div style={styles.loading}>
-        <div style={styles.loadingText}>Loading match...</div>
+      <div style={{ minHeight: '100vh', background: gradients.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Navbar />
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>🏏</div>
+          <p style={{ color: colors.textMuted }}>Loading match...</p>
+        </div>
       </div>
     )
   }
@@ -98,99 +99,158 @@ export default function MatchRoom() {
   const { match, recent_balls } = matchState
   const isLive = match.status === 'live'
   const isUpcoming = match.status === 'upcoming'
-
   const myTotalScore = myDecisions.reduce((s, d) => s + d.total_score, 0)
+  const timerPct = decisionSecondsLeft / 10
 
   return (
-    <div style={styles.page}>
-      {/* Header */}
-      <nav style={styles.nav}>
-        <button onClick={() => navigate('/')} style={styles.back}>← Back</button>
-        <div style={styles.navCenter}>
-          <span style={{ ...styles.statusDot, background: isLive ? '#22c55e' : '#3b82f6' }} />
-          <span style={styles.matchTitle}>{match.title}</span>
-        </div>
-        <div style={styles.myScore}>
-          <span style={styles.myScoreLabel}>My Score</span>
-          <span style={styles.myScoreVal}>{Math.round(myTotalScore)}</span>
-        </div>
-      </nav>
+    <div style={{ minHeight: '100vh', background: gradients.page }}>
+      <Navbar />
 
-      {/* Start match banner */}
-      {isUpcoming && (
-        <div style={styles.banner}>
-          <span>Match hasn't started yet.</span>
-          <button style={styles.startBtn} onClick={handleStartMatch} disabled={starting}>
-            {starting ? 'Starting...' : 'Start Simulation'}
-          </button>
-        </div>
-      )}
-
-      {/* Decision window timer */}
+      {/* Decision window alert bar */}
       {pendingDecisionType && decisionSecondsLeft > 0 && (
-        <div style={styles.decisionBanner}>
-          <span style={styles.decisionLabel}>
-            {pendingDecisionType.replace('_', ' ').toUpperCase()} DECISION
-          </span>
-          <span style={styles.timer}>{decisionSecondsLeft}s</span>
+        <div style={s.alertBar}>
+          <div style={{ ...s.alertBarFill, width: `${timerPct * 100}%`, background: decisionSecondsLeft > 5 ? colors.orange : colors.red }} />
+          <div style={s.alertContent}>
+            <span style={s.alertLabel}>
+              ⚡ {pendingDecisionType.replace('_', ' ').toUpperCase()} — Make your call!
+            </span>
+            <span style={{ ...s.alertTimer, color: decisionSecondsLeft <= 3 ? colors.red : colors.orange }}>
+              {decisionSecondsLeft}s
+            </span>
+          </div>
         </div>
       )}
 
-      <div style={styles.layout}>
-        {/* Left: Scoreboard + recent decisions */}
-        <div style={styles.leftCol}>
+      {/* Upcoming banner */}
+      {isUpcoming && (
+        <div style={s.upcomingBar}>
+          <span style={s.upcomingText}>Set your pre-match strategy before simulation begins</span>
+          <div style={s.upcomingActions}>
+            <button onClick={() => navigate(`/match/${matchId}/strategy`)} style={s.stratBtn}>
+              🧠 Strategy Room
+            </button>
+            <button onClick={() => navigate(`/match/${matchId}/challenge`)} style={s.challengeBtn}>
+              🤺 Challenge Mode
+            </button>
+            <button onClick={handleStartMatch} disabled={starting} style={s.startBtn}>
+              {starting ? '...' : '▶ Start Match'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div style={s.layout}>
+        {/* Left col */}
+        <div style={s.leftCol}>
           <Scoreboard match={match} recentBalls={recent_balls} />
 
+          <CommentaryBox
+            matchId={matchId}
+            innings={match.current_innings}
+            currentOver={match.current_over}
+            enabled={isLive}
+          />
+
           {myDecisions.length > 0 && (
-            <div style={styles.myDecisions}>
-              <h3 style={styles.sectionTitle}>My Decisions</h3>
-              {myDecisions.slice(-5).reverse().map((d, i) => (
-                <div key={d.id} style={styles.decisionRow}>
-                  <span style={styles.decisionType}>{d.decision_type.replace('_', ' ')}</span>
-                  <span style={styles.decisionOver}>Over {d.over_no}.{d.ball_no}</span>
-                  <span style={{ ...styles.decisionScore, color: d.total_score >= 70 ? '#22c55e' : d.total_score >= 45 ? '#f59e0b' : '#ef4444' }}>
-                    {Math.round(d.total_score)}pts
-                  </span>
+            <div style={s.card}>
+              <div style={s.cardHeader}>
+                <span style={s.cardTitle}>My Decisions</span>
+                <span style={s.totalPts}>+{Math.round(myTotalScore)} pts</span>
+              </div>
+              {myDecisions.slice(-5).reverse().map(d => (
+                <div key={d.id} style={s.decRow}>
+                  <div>
+                    <div style={s.decType}>{d.decision_type.replace('_', ' ')}</div>
+                    <div style={s.decOver}>Over {d.over_no}.{d.ball_no}</div>
+                  </div>
+                  <div style={{ ...s.decScore, color: d.total_score >= 70 ? colors.green : d.total_score >= 45 ? colors.yellow : colors.red }}>
+                    {Math.round(d.total_score)}
+                  </div>
                 </div>
               ))}
             </div>
           )}
-        </div>
 
-        {/* Center: Decision panel */}
-        <div style={styles.centerCol}>
-          {pendingDecisionType === 'field_placement' && (
-            <FieldDiagram onSubmit={(positions: FieldPosition[]) => submitDecision('field_placement', positions)} disabled={!isLive} />
-          )}
-          {pendingDecisionType === 'bowling_change' && (
-            <BowlingPanel onSubmit={(p) => submitDecision('bowling_change', p)} disabled={!isLive} />
-          )}
-          {pendingDecisionType === 'batting_order' && (
-            <BattingPanel onSubmit={(p) => submitDecision('batting_order', p)} disabled={!isLive} />
-          )}
-          {(pendingDecisionType === 'powerplay' || pendingDecisionType === 'drs_review') && (
-            <PowerplayPanel type={pendingDecisionType as any} onSubmit={(p) => submitDecision(pendingDecisionType, p)} disabled={!isLive} />
-          )}
-          {!pendingDecisionType && (
-            <div style={styles.waiting}>
-              <div style={styles.waitingIcon}>{isLive ? '⏳' : '🏏'}</div>
-              <p style={styles.waitingText}>
-                {isLive ? 'Watching for decision windows...' : 'Waiting for the match to start'}
-              </p>
-              <p style={styles.waitingSubtext}>
-                {isLive ? 'Decision panels appear before bowling changes, field setups, and key moments.' : 'Click "Start Simulation" to begin the ball-by-ball simulation.'}
-              </p>
+          {/* Post-match actions */}
+          {match.status === 'completed' && (
+            <div style={s.card}>
+              <p style={s.cardTitle}>Match Complete</p>
+              <div style={s.postActions}>
+                <button onClick={() => navigate(`/match/${matchId}/report`)} style={s.reportBtn}>
+                  📊 Coach Report Card
+                </button>
+                <button onClick={() => navigate(`/match/${matchId}/replay`)} style={s.replayBtn}>
+                  ⏪ Tactical Replay
+                </button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Right: Leaderboard */}
-        <div style={styles.rightCol}>
+        {/* Center col */}
+        <div style={s.centerCol}>
+          {pendingDecisionType === 'field_placement' && (
+            <FieldDiagram onSubmit={(p: FieldPosition[]) => submitDecision('field_placement', p)} disabled={!isLive} />
+          )}
+          {pendingDecisionType === 'bowling_change' && (
+            <BowlingPanel onSubmit={p => submitDecision('bowling_change', p)} disabled={!isLive} />
+          )}
+          {pendingDecisionType === 'batting_order' && (
+            <BattingPanel onSubmit={p => submitDecision('batting_order', p)} disabled={!isLive} />
+          )}
+          {(pendingDecisionType === 'powerplay' || pendingDecisionType === 'drs_review') && (
+            <PowerplayPanel type={pendingDecisionType as any} onSubmit={p => submitDecision(pendingDecisionType, p)} disabled={!isLive} />
+          )}
+
+          {!pendingDecisionType && (
+            <div style={s.waiting}>
+              <div style={s.waitingPulse}>
+                <span style={s.waitingIcon}>{isLive ? '📡' : '🏏'}</span>
+              </div>
+              <p style={s.waitingTitle}>
+                {isLive ? 'Live Match in Progress' : match.status === 'completed' ? 'Match Completed' : 'Waiting to Start'}
+              </p>
+              <p style={s.waitingDesc}>
+                {isLive
+                  ? 'Decision panels will appear before bowling changes, field setups, and key match moments.'
+                  : match.status === 'completed'
+                    ? 'View your Coach Report Card or replay key overs with different decisions.'
+                    : 'Start the simulation to begin making live coaching decisions.'}
+              </p>
+              {isLive && (
+                <div style={s.quickLinks}>
+                  <button onClick={() => navigate(`/match/${matchId}/challenge`)} style={s.quickBtn}>
+                    🤺 Challenge a Friend
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right col */}
+        <div style={s.rightCol}>
           <LeaderboardWidget entries={leaderboard} currentUserId={user?.id} title="Match Leaderboard" />
+
+          <div style={s.card}>
+            <p style={s.cardTitle}>Quick Actions</p>
+            <div style={s.quickActionsGrid}>
+              {[
+                { icon: '🧠', label: 'Strategy', path: `/match/${matchId}/strategy` },
+                { icon: '🤺', label: 'Challenge', path: `/match/${matchId}/challenge` },
+                { icon: '⏪', label: 'Replay', path: `/match/${matchId}/replay` },
+                { icon: '📊', label: 'Report', path: `/match/${matchId}/report` },
+              ].map(item => (
+                <button key={item.label} onClick={() => navigate(item.path)} style={s.quickActionBtn}>
+                  <span style={s.quickActionIcon}>{item.icon}</span>
+                  <span style={s.quickActionLabel}>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Tactical Feedback Modal */}
       {lastDecision && (
         <TacticalFeedback decision={lastDecision} onClose={() => setLastDecision(null)} />
       )}
@@ -198,35 +258,42 @@ export default function MatchRoom() {
   )
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', background: '#0a0a0f' },
-  loading: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  loadingText: { color: '#94a3b8', fontSize: 16 },
-  nav: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 24px', borderBottom: '1px solid #1e1e2e', background: '#0d0d17' },
-  back: { padding: '8px 16px', background: 'transparent', border: '1px solid #2d2d3d', borderRadius: 8, color: '#94a3b8', cursor: 'pointer', fontSize: 13 },
-  navCenter: { display: 'flex', alignItems: 'center', gap: 8 },
-  statusDot: { width: 8, height: 8, borderRadius: '50%' },
-  matchTitle: { fontSize: 15, fontWeight: 600, color: '#e2e8f0' },
-  myScore: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end' },
-  myScoreLabel: { fontSize: 11, color: '#64748b' },
-  myScoreVal: { fontSize: 20, fontWeight: 800, color: '#f97316' },
-  banner: { background: '#1e1e2e', borderBottom: '1px solid #2d2d3d', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  startBtn: { padding: '10px 24px', background: '#f97316', border: 'none', borderRadius: 8, color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 14 },
-  decisionBanner: { background: '#f9731622', borderBottom: '1px solid #f9731644', padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  decisionLabel: { color: '#f97316', fontWeight: 700, fontSize: 14 },
-  timer: { fontSize: 24, fontWeight: 800, color: '#f97316' },
-  layout: { display: 'grid', gridTemplateColumns: '300px 1fr 260px', gap: 20, padding: 20, maxWidth: 1400, margin: '0 auto' },
-  leftCol: { display: 'flex', flexDirection: 'column', gap: 16 },
-  centerCol: { display: 'flex', flexDirection: 'column', gap: 16 },
-  rightCol: { display: 'flex', flexDirection: 'column', gap: 16 },
-  waiting: { background: '#12121a', border: '1px solid #1e1e2e', borderRadius: 12, padding: 48, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, flex: 1 },
-  waitingIcon: { fontSize: 40 },
-  waitingText: { fontSize: 16, fontWeight: 600, color: '#e2e8f0', textAlign: 'center' },
-  waitingSubtext: { fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 1.6, maxWidth: 300 },
-  myDecisions: { background: '#12121a', border: '1px solid #1e1e2e', borderRadius: 12, padding: 16 },
-  sectionTitle: { fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginBottom: 10 },
-  decisionRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1e1e2e' },
-  decisionType: { fontSize: 13, color: '#94a3b8', textTransform: 'capitalize', flex: 1 },
-  decisionOver: { fontSize: 12, color: '#64748b' },
-  decisionScore: { fontSize: 14, fontWeight: 700, marginLeft: 12 },
+const s: Record<string, React.CSSProperties> = {
+  alertBar: { position: 'relative', height: 52, overflow: 'hidden', borderBottom: '1px solid rgba(249,115,22,0.3)' },
+  alertBarFill: { position: 'absolute', left: 0, top: 0, bottom: 0, transition: 'width 1s linear, background 0.5s', opacity: 0.12 },
+  alertContent: { position: 'relative', zIndex: 1, height: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 24px' },
+  alertLabel: { fontSize: 13, fontWeight: 700, color: colors.orange },
+  alertTimer: { fontSize: 28, fontWeight: 900, transition: 'color 0.5s' },
+  upcomingBar: { background: 'rgba(255,255,255,0.03)', borderBottom: `1px solid ${colors.border}`, padding: '12px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' },
+  upcomingText: { fontSize: 13, color: colors.textMuted },
+  upcomingActions: { display: 'flex', gap: 8 },
+  stratBtn: { padding: '8px 16px', background: colors.purpleDim, border: `1px solid rgba(139,92,246,0.3)`, borderRadius: radius.sm, color: colors.purple, fontWeight: 600, cursor: 'pointer', fontSize: 13 },
+  challengeBtn: { padding: '8px 16px', background: colors.greenDim, border: `1px solid rgba(34,197,94,0.3)`, borderRadius: radius.sm, color: colors.green, fontWeight: 600, cursor: 'pointer', fontSize: 13 },
+  startBtn: { padding: '8px 20px', background: gradients.orange, border: 'none', borderRadius: radius.sm, color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 13 },
+  layout: { display: 'grid', gridTemplateColumns: '300px 1fr 260px', gap: 16, padding: '20px 24px', maxWidth: 1400, margin: '0 auto' },
+  leftCol: { display: 'flex', flexDirection: 'column', gap: 14 },
+  centerCol: { display: 'flex', flexDirection: 'column', gap: 14 },
+  rightCol: { display: 'flex', flexDirection: 'column', gap: 14 },
+  card: { background: 'rgba(255,255,255,0.03)', border: `1px solid ${colors.border}`, borderRadius: radius.lg, padding: 16, backdropFilter: 'blur(16px)' },
+  cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  cardTitle: { fontSize: 13, fontWeight: 700, color: colors.text, marginBottom: 12 },
+  totalPts: { fontSize: 16, fontWeight: 800, color: colors.orange },
+  decRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: `1px solid rgba(255,255,255,0.04)` },
+  decType: { fontSize: 12, fontWeight: 600, color: colors.text, textTransform: 'capitalize' },
+  decOver: { fontSize: 11, color: colors.textFaint, marginTop: 2 },
+  decScore: { fontSize: 20, fontWeight: 900 },
+  postActions: { display: 'flex', flexDirection: 'column', gap: 8 },
+  reportBtn: { padding: '11px', background: gradients.orange, border: 'none', borderRadius: radius.sm, color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 13 },
+  replayBtn: { padding: '11px', background: 'rgba(255,255,255,0.05)', border: `1px solid ${colors.border}`, borderRadius: radius.sm, color: colors.text, fontWeight: 600, cursor: 'pointer', fontSize: 13 },
+  waiting: { background: 'rgba(255,255,255,0.02)', border: `1px dashed rgba(255,255,255,0.08)`, borderRadius: radius.xl, padding: '64px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, flex: 1 },
+  waitingPulse: { width: 80, height: 80, borderRadius: '50%', background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 30px rgba(249,115,22,0.1)' },
+  waitingIcon: { fontSize: 36 },
+  waitingTitle: { fontSize: 17, fontWeight: 700, color: colors.text },
+  waitingDesc: { fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 1.6, maxWidth: 320 },
+  quickLinks: { marginTop: 8 },
+  quickBtn: { padding: '10px 20px', background: colors.greenDim, border: `1px solid rgba(34,197,94,0.25)`, borderRadius: radius.md, color: colors.green, fontWeight: 600, cursor: 'pointer', fontSize: 13 },
+  quickActionsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
+  quickActionBtn: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '12px 8px', background: 'rgba(255,255,255,0.04)', border: `1px solid ${colors.border}`, borderRadius: radius.md, cursor: 'pointer', transition: 'all 0.15s' },
+  quickActionIcon: { fontSize: 20 },
+  quickActionLabel: { fontSize: 11, fontWeight: 600, color: colors.textMuted },
 }
