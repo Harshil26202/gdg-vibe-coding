@@ -1,0 +1,88 @@
+{
+  "title": "CSK vs MI — Match 14, IPL 2024",
+  "team_a": "Chennai Super Kings",
+  "team_b": "Mumbai Indians",
+  "venue": "Wankhede Stadium, Mumbai",
+  "team_a_players": {
+    "batsmen": ["Ruturaj Gaikwad", "Devon Conway", "Ajinkya Rahane", "Shivam Dube", "Ravindra Jadeja", "MS Dhoni", "Moeen Ali"],
+    "bowlers": ["Deepak Chahar", "Tushar Deshpande", "Maheesh Theekshana", "Ravindra Jadeja", "Moeen Ali", "Simarjeet Singh"]
+  },
+  "team_b_players": {
+    "batsmen": ["Rohit Sharma", "Ishan Kishan", "Suryakumar Yadav", "Tilak Varma", "Hardik Pandya", "Tim David", "Romario Shepherd"],
+    "bowlers": ["Jasprit Bumrah", "Gerald Coetzee", "Piyush Chawla", "Hardik Pandya", "Romario Shepherd", "Naman Dhir"]
+  },
+  "innings": [
+    {
+      "batting_team": "Mumbai Indians",
+      "bowling_team": "Chennai Super Kings",
+      "target": null,
+      "overs": [
+        {
+          "over_no": 0,
+          "bowler": "Deepak Chahar",
+          "bowler_type": "pace_swing",
+          "balls": [
+            {"ball_no": 1, "batsman": "Rohit Sharma", "batsman_hand": "RHB", "runs": 0, "is_wicket": false, "commentary": "Good length delivery, defended back to the bowler.", "captain_field": {"slip": true, "gully": true, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": false}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 2, "batsman": "Rohit Sharma", "batsman_hand": "RHB", "runs": 4, "is_wicket": false, "commentary": "Rohit flicks it through midwicket for a boundary!", "captain_field": {"slip": true, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": false, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 3, "batsman": "Rohit Sharma", "batsman_hand": "RHB", "runs": 0, "is_wicket": false, "commentary": "Swings late, beats the outside edge!", "captain_field": {"slip": true, "gully": true, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": false}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 4, "batsman": "Ishan Kishan", "batsman_hand": "LHB", "runs": 6, "is_wicket": false, "commentary": "Kishan launches it over long-on! Massive six!", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": false, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 5, "batsman": "Ishan Kishan", "batsman_hand": "LHB", "runs": 1, "is_wicket": false, "commentary": "Worked away to square leg for a single.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": false, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 6, "batsman": "Rohit Sharma", "batsman_hand": "RHB", "runs": 0, "is_wicket": true, "wicket_type": "caught_behind", "commentary": "WICKET! Chahar gets Rohit! Edges it to Dhoni, India captain departs early!", "captain_field": {"slip": true, "gully": true, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": false}, "captain_bowl": null, "captain_bat": "Suryakumar Yadav", "captain_pp": null}
+          ]
+        },
+        {
+          "over_no": 1,
+          "bowler": "Tushar Deshpande",
+          "bowler_type": "pace_fast",
+          "balls": [
+            {"ball_no": 1, "batsman": "Suryakumar Yadav", "batsman_hand": "RHB", "runs": 4, "is_wicket": false, "commentary": "SKY pulls it off the back foot for four!", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 2, "batsman": "Suryakumar Yadav", "batsman_hand": "RHB", "runs": 6, "is_wicket": false, "commentary": "Ramp shot over third man! SKY in full flow!", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": false, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 3, "batsman": "Suryakumar Yadav", "batsman_hand": "RHB", "runs": 0, "is_wicket": false, "commentary": "Dug in short, SKY ducks under it.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 4, "batsman": "Ishan Kishan", "batsman_hand": "LHB", "runs": 2, "is_wicket": false, "commentary": "Driven through the covers, they run two.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": false}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 5, "batsman": "Ishan Kishan", "batsman_hand": "LHB", "runs": 4, "is_wicket": false, "commentary": "Flicked off the hip, races to fine leg boundary!", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": false, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 6, "batsman": "Ishan Kishan", "batsman_hand": "LHB", "runs": 1, "is_wicket": false, "commentary": "Pushed to mid-on, single taken.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": false}, "captain_bowl": "Maheesh Theekshana", "captain_bat": null, "captain_pp": null}
+          ]
+        },
+        {
+          "over_no": 2,
+          "bowler": "Maheesh Theekshana",
+          "bowler_type": "spin_offbreak",
+          "balls": [
+            {"ball_no": 1, "batsman": "Suryakumar Yadav", "batsman_hand": "RHB", "runs": 0, "is_wicket": false, "commentary": "Tight spin, SKY defends with soft hands.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 2, "batsman": "Suryakumar Yadav", "batsman_hand": "RHB", "runs": 6, "is_wicket": false, "commentary": "Reverse swept over point for six! Outrageous from SKY!", "captain_field": {"slip": false, "gully": false, "cover_point": false, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 3, "batsman": "Suryakumar Yadav", "batsman_hand": "RHB", "runs": 1, "is_wicket": false, "commentary": "Pushed to cover for a single.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 4, "batsman": "Ishan Kishan", "batsman_hand": "LHB", "runs": 0, "is_wicket": true, "wicket_type": "stumped", "commentary": "STUMPED! Theekshana strikes! Kishan goes for the slog, misses, Dhoni is lightning fast!", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": "Tilak Varma", "captain_pp": null},
+            {"ball_no": 5, "batsman": "Tilak Varma", "batsman_hand": "LHB", "runs": 4, "is_wicket": false, "commentary": "Tilak drives magnificently through extra cover for four!", "captain_field": {"slip": false, "gully": false, "cover_point": false, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 6, "batsman": "Tilak Varma", "batsman_hand": "LHB", "runs": 2, "is_wicket": false, "commentary": "Swept to deep square leg, they run two.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": false, "third_man": true, "deep_midwicket": true}, "captain_bowl": "Ravindra Jadeja", "captain_bat": null, "captain_pp": null}
+          ]
+        },
+        {
+          "over_no": 3,
+          "bowler": "Ravindra Jadeja",
+          "bowler_type": "spin_leftharm",
+          "balls": [
+            {"ball_no": 1, "batsman": "Suryakumar Yadav", "batsman_hand": "RHB", "runs": 0, "is_wicket": false, "commentary": "Pushed back to the bowler, tight line.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 2, "batsman": "Suryakumar Yadav", "batsman_hand": "RHB", "runs": 4, "is_wicket": false, "commentary": "SKY slog sweeps it over midwicket for four!", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": false, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": false}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 3, "batsman": "Suryakumar Yadav", "batsman_hand": "RHB", "runs": 0, "is_wicket": true, "wicket_type": "caught_midwicket", "commentary": "OUT! Jadeja gets his man! SKY goes for the sweep again, gets a top edge to deep midwicket!", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": false, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": "Hardik Pandya", "captain_pp": null},
+            {"ball_no": 4, "batsman": "Hardik Pandya", "batsman_hand": "RHB", "runs": 6, "is_wicket": false, "commentary": "Hardik sends it into the stands over long-on! Enormous six!", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": false, "mid_on": false, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 5, "batsman": "Hardik Pandya", "batsman_hand": "RHB", "runs": 1, "is_wicket": false, "commentary": "Pushed to cover for a quick single.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 6, "batsman": "Tilak Varma", "batsman_hand": "LHB", "runs": 0, "is_wicket": false, "commentary": "Arm ball, Tilak misses and goes hit on the pads - not out, going down leg.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": "Deepak Chahar", "captain_bat": null, "captain_pp": null}
+          ]
+        },
+        {
+          "over_no": 4,
+          "bowler": "Deepak Chahar",
+          "bowler_type": "pace_swing",
+          "balls": [
+            {"ball_no": 1, "batsman": "Hardik Pandya", "batsman_hand": "RHB", "runs": 4, "is_wicket": false, "commentary": "Hardik drives hard through the covers for four!", "captain_field": {"slip": false, "gully": false, "cover_point": false, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 2, "batsman": "Hardik Pandya", "batsman_hand": "RHB", "runs": 0, "is_wicket": false, "commentary": "Full delivery, driven straight to mid-off.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": false}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 3, "batsman": "Hardik Pandya", "batsman_hand": "RHB", "runs": 6, "is_wicket": false, "commentary": "Hardik hammers it over long-off! Six!!", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": false, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 4, "batsman": "Tilak Varma", "batsman_hand": "LHB", "runs": 1, "is_wicket": false, "commentary": "Clipped to mid-on, easy single.", "captain_field": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": null, "captain_bat": null, "captain_pp": null},
+            {"ball_no": 5, "batsman": "Hardik Pandya", "batsman_hand": "RHB", "runs": 0, "is_wicket": true, "wicket_type": "bowled", "commentary": "BOWLED! What a delivery from Chahar! Swings late and clips the top of off stump! Hardik Pandya departs!", "captain_field": {"slip": true, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": false}, "captain_bowl": null, "captain_bat": "Tim David", "captain_pp": null},
+            {"ball_no": 6, "batsman": "Tim David", "batsman_hand": "RHB", "runs": 4, "is_wicket": false, "commentary": "Tim David announces himself with a blazing cut shot for four!", "captain_field": {"slip": false, "gully": false, "cover_point": false, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true}, "captain_bowl": "Maheesh Theekshana", "captain_bat": null, "captain_pp": null}
+          ]
+        }
+      ]
+    }
+  ]
+}

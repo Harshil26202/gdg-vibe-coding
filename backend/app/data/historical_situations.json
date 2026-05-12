@@ -1,0 +1,74 @@
+[
+  {
+    "situation_hash": "innings1_over0-5_wkt0_rr_low_pace_swing_RHB",
+    "innings": 1, "over_bucket": "0-5", "wickets_down": 0,
+    "run_rate_bucket": "low", "bowler_type": "pace_swing", "batsman_hand": "RHB",
+    "optimal_field_config": {"slip": true, "gully": true, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": false},
+    "optimal_bowler_type": "pace_swing",
+    "win_probability_delta": 0.12,
+    "rationale": "Slip cordon maximises edges in powerplay with new ball swinging. Pace + swing on fresh pitch is the optimal bowler choice."
+  },
+  {
+    "situation_hash": "innings1_over0-5_wkt0_rr_low_pace_swing_LHB",
+    "innings": 1, "over_bucket": "0-5", "wickets_down": 0,
+    "run_rate_bucket": "low", "bowler_type": "pace_swing", "batsman_hand": "LHB",
+    "optimal_field_config": {"slip": true, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": false, "square_leg": true, "third_man": true, "deep_midwicket": true},
+    "optimal_bowler_type": "pace_swing",
+    "win_probability_delta": 0.10,
+    "rationale": "Against left-handers with inswing, bring in mid-on and set deep midwicket. Remove fine leg as LHBs rarely edge to it early."
+  },
+  {
+    "situation_hash": "innings1_over0-5_wkt1_rr_high_pace_fast_RHB",
+    "innings": 1, "over_bucket": "0-5", "wickets_down": 1,
+    "run_rate_bucket": "high", "bowler_type": "pace_fast", "batsman_hand": "RHB",
+    "optimal_field_config": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true},
+    "optimal_bowler_type": "spin_offbreak",
+    "win_probability_delta": 0.08,
+    "rationale": "After a wicket in powerplay with high run rate pressure, bringing spin on to dry up runs is more effective than pace. Set boundary riders."
+  },
+  {
+    "situation_hash": "innings1_over6-10_wkt2_rr_mid_spin_offbreak_RHB",
+    "innings": 1, "over_bucket": "6-10", "wickets_down": 2,
+    "run_rate_bucket": "mid", "bowler_type": "spin_offbreak", "batsman_hand": "RHB",
+    "optimal_field_config": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true},
+    "optimal_bowler_type": "spin_offbreak",
+    "win_probability_delta": 0.09,
+    "rationale": "Post-powerplay with 2 wickets, off-spin with sweeper on the leg side and cover set well. No third man needed — batsmen rarely cut offbreak here."
+  },
+  {
+    "situation_hash": "innings1_over6-10_wkt2_rr_mid_spin_leftharm_LHB",
+    "innings": 1, "over_bucket": "6-10", "wickets_down": 2,
+    "run_rate_bucket": "mid", "bowler_type": "spin_leftharm", "batsman_hand": "LHB",
+    "optimal_field_config": {"slip": false, "gully": false, "cover_point": false, "mid_off": true, "mid_on": true, "fine_leg": true, "square_leg": false, "third_man": true, "deep_midwicket": true},
+    "optimal_bowler_type": "spin_leftharm",
+    "win_probability_delta": 0.11,
+    "rationale": "Left-arm spin into the rough to left-handers post-powerplay. Open the off side, pack the on side. Bowler choice optimal here."
+  },
+  {
+    "situation_hash": "innings1_over11-15_wkt3_rr_mid_spin_leftharm_RHB",
+    "innings": 1, "over_bucket": "11-15", "wickets_down": 3,
+    "run_rate_bucket": "mid", "bowler_type": "spin_leftharm", "batsman_hand": "RHB",
+    "optimal_field_config": {"slip": false, "gully": false, "cover_point": true, "mid_off": true, "mid_on": false, "fine_leg": true, "square_leg": true, "third_man": false, "deep_midwicket": true},
+    "optimal_bowler_type": "pace_medium",
+    "win_probability_delta": 0.07,
+    "rationale": "Mid-overs with 3 wickets gone, medium pace is more effective than spin to right-handers. Mix up the lengths."
+  },
+  {
+    "situation_hash": "innings1_over16-20_wkt3_rr_high_pace_fast_RHB",
+    "innings": 1, "over_bucket": "16-20", "wickets_down": 3,
+    "run_rate_bucket": "high", "bowler_type": "pace_fast", "batsman_hand": "RHB",
+    "optimal_field_config": {"slip": false, "gully": false, "cover_point": false, "mid_off": false, "mid_on": true, "fine_leg": true, "square_leg": true, "third_man": true, "deep_midwicket": true},
+    "optimal_bowler_type": "pace_fast",
+    "win_probability_delta": 0.14,
+    "rationale": "Death overs: pack the boundary. No close catchers. Yorker-length fast bowling is the most effective death strategy."
+  },
+  {
+    "situation_hash": "innings1_over16-20_wkt4_rr_high_pace_fast_LHB",
+    "innings": 1, "over_bucket": "16-20", "wickets_down": 4,
+    "run_rate_bucket": "high", "bowler_type": "pace_fast", "batsman_hand": "LHB",
+    "optimal_field_config": {"slip": false, "gully": false, "cover_point": false, "mid_off": true, "mid_on": false, "fine_leg": false, "square_leg": true, "third_man": true, "deep_midwicket": true},
+    "optimal_bowler_type": "pace_fast",
+    "win_probability_delta": 0.13,
+    "rationale": "Death overs against left-hander: remove fine leg, add mid-off. Left-handers tend to go over long-on and through the off side in death overs."
+  }
+]
