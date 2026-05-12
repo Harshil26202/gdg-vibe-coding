@@ -1,13 +1,18 @@
-import anthropic
+from __future__ import annotations
+
+import logging
+from openai import AsyncOpenAI
 from app.config import settings
 
-_client: anthropic.AsyncAnthropic | None = None
+logger = logging.getLogger(__name__)
+
+_client: AsyncOpenAI | None = None
 
 
-def _get_client() -> anthropic.AsyncAnthropic:
+def _get_client() -> AsyncOpenAI:
     global _client
     if _client is None:
-        _client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+        _client = AsyncOpenAI(api_key=settings.openai_api_key)
     return _client
 
 
@@ -18,7 +23,7 @@ async def generate_tactical_explanation(
     match_context: dict,
     score_breakdown: dict,
 ) -> str:
-    if not settings.anthropic_api_key:
+    if not settings.openai_api_key:
         return _fallback_explanation(decision_type, score_breakdown)
 
     context_str = (
@@ -51,14 +56,14 @@ Score: {score_breakdown.get('total_score', 0)}/100 (Captain agreement: {score_br
 In 2-3 sentences, explain: (1) whether the fan's decision was tactically sound, (2) why the captain made their choice, and (3) what the historical data says about this situation. Be specific to the match situation. Be direct and engaging, like a TV commentator."""
 
     try:
-        client = _get_client()
-        response = await client.messages.create(
-            model="claude-sonnet-4-6",
+        response = await _get_client().chat.completions.create(
+            model="gpt-4o-mini",
             max_tokens=200,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.content[0].text.strip()
-    except Exception as e:
+        return response.choices[0].message.content.strip()
+    except Exception:
+        logger.exception("Tactical explanation generation failed")
         return _fallback_explanation(decision_type, score_breakdown)
 
 

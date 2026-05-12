@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from datetime import datetime, timezone
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -25,7 +26,7 @@ class ChallengeOut(BaseModel):
     id: int
     match_id: int
     creator_id: int
-    opponent_id: int | None = None
+    opponent_id: Optional[int] = None
     opponent_is_ai: bool
     status: str
     creator_score: float

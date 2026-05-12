@@ -1,16 +1,19 @@
-import anthropic
+from __future__ import annotations
+
+import json
 import logging
+from openai import AsyncOpenAI
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-_client: anthropic.AsyncAnthropic | None = None
+_client: AsyncOpenAI | None = None
 
 
-def _get_client() -> anthropic.AsyncAnthropic:
+def _get_client() -> AsyncOpenAI:
     global _client
     if _client is None:
-        _client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+        _client = AsyncOpenAI(api_key=settings.openai_api_key)
     return _client
 
 
@@ -25,13 +28,12 @@ async def generate_over_commentary(
     total_wickets: int,
     fan_decision_summary: str | None = None,
 ) -> str:
-    if not settings.anthropic_api_key:
+    if not settings.openai_api_key:
         return _fallback_commentary(over_no, runs_in_over, wickets_in_over, batting_team)
 
     ball_summary = " | ".join(
         f"{'W' if b.get('is_wicket') else b.get('runs', 0)}" for b in balls
     )
-
     fan_context = f"\nThe fan coach decided: {fan_decision_summary}" if fan_decision_summary else ""
 
     prompt = f"""You are Harsha Bhogle, the legendary cricket commentator. Deliver a punchy end-of-over summary.
@@ -45,12 +47,12 @@ Current score: {total_score}/{total_wickets}{fan_context}
 Write 2 sharp sentences in Harsha's style — vivid, specific, with a hint of drama. Reference the fan's decision if provided. No hashtags, no emojis."""
 
     try:
-        response = await _get_client().messages.create(
-            model="claude-sonnet-4-6",
+        response = await _get_client().chat.completions.create(
+            model="gpt-4o-mini",
             max_tokens=120,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.content[0].text.strip()
+        return response.choices[0].message.content.strip()
     except Exception:
         logger.exception("Commentary generation failed")
         return _fallback_commentary(over_no, runs_in_over, wickets_in_over, batting_team)
@@ -61,9 +63,8 @@ async def generate_ai_opponent_decision(
     match_context: dict,
     available_options: list[str],
 ) -> dict:
-    """Claude makes a tactical decision as an AI opponent in H2H mode."""
-    if not settings.anthropic_api_key:
-        return {"choice": available_options[0] if available_options else "default"}
+    if not settings.openai_api_key:
+        return {"choice": available_options[0] if available_options else "default", "reasoning": "Tactical default."}
 
     prompt = f"""You are an expert IPL coach making a real-time tactical decision.
 
@@ -78,14 +79,13 @@ Available options: {', '.join(available_options)}
 Reply with ONLY a JSON object: {{"choice": "<option>", "reasoning": "<one sentence why>"}}"""
 
     try:
-        response = await _get_client().messages.create(
-            model="claude-sonnet-4-6",
+        response = await _get_client().chat.completions.create(
+            model="gpt-4o-mini",
             max_tokens=100,
             messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
         )
-        import json
-        text = response.content[0].text.strip()
-        return json.loads(text)
+        return json.loads(response.choices[0].message.content)
     except Exception:
         return {"choice": available_options[0] if available_options else "default", "reasoning": "Tactical default."}
 
@@ -97,7 +97,6 @@ async def generate_coach_report(
     total_score: float,
     rank: int,
 ) -> dict:
-    """Generate a personalized post-match Coach Report Card."""
     if not decisions:
         return {
             "headline": "Not enough data yet",
@@ -116,7 +115,7 @@ async def generate_coach_report(
     best_type = max(type_avgs, key=type_avgs.get) if type_avgs else "field_placement"
     worst_type = min(type_avgs, key=type_avgs.get) if type_avgs else "bowling_change"
 
-    if not settings.anthropic_api_key:
+    if not settings.openai_api_key:
         return _fallback_report(username, total_score, best_type, worst_type, rank)
 
     decisions_summary = "\n".join(
@@ -148,18 +147,13 @@ Write a JSON coach report with these exact keys:
 Be specific to their actual decisions. Be honest but encouraging."""
 
     try:
-        response = await _get_client().messages.create(
-            model="claude-sonnet-4-6",
+        response = await _get_client().chat.completions.create(
+            model="gpt-4o-mini",
             max_tokens=350,
             messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
         )
-        import json
-        text = response.content[0].text.strip()
-        if text.startswith("```"):
-            text = text.split("```")[1]
-            if text.startswith("json"):
-                text = text[4:]
-        return json.loads(text.strip())
+        return json.loads(response.choices[0].message.content)
     except Exception:
         logger.exception("Report generation failed")
         return _fallback_report(username, total_score, best_type, worst_type, rank)

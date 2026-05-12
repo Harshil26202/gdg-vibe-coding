@@ -37,7 +37,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://ipl_user:ipl_pass@postgres:5432/ipl_simulator
       REDIS_URL: redis://redis:6379
       SECRET_KEY: dev-secret-key-change-in-production
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
       CORS_ORIGINS: http://localhost:5173
     depends_on:
       postgres:

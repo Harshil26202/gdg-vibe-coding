@@ -154,10 +154,8 @@ async def try_replay_decision(
         score_breakdown=scores,
     )
 
-    outcome_hint = (
-        f"This over went for {over_runs} runs and {over_wickets} wicket(s). "
-        f"{'The captain\\'s call paid off!' if scores['captain_match_score'] > 20 else 'Your call was a valid alternative.'}"
-    )
+    captain_verdict = "The captain's call paid off!" if scores["captain_match_score"] > 20 else "Your call was a valid alternative."
+    outcome_hint = f"This over went for {over_runs} runs and {over_wickets} wicket(s). {captain_verdict}"
 
     return ReplayResult(
         captain_match_score=scores["captain_match_score"],
