@@ -12,14 +12,6 @@
 
 ---
 
-## Demo
-
-<video src="docs/assets/demo.mp4" autoplay loop muted playsinline controls width="100%"></video>
-
-*60-second highlight — Login · Home · Match Room · Live scoreboard · Decision panel · Tactical Feedback · Leaderboard · Report Card · Strategy Room*
-
-> **Want the full walkthrough?** A ~3-minute extended video covering every interaction in detail is at [`docs/assets/demo-highlight.mp4`](docs/assets/demo-highlight.mp4).
-
 ---
 
 ## What Is This?
